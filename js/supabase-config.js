@@ -5,9 +5,9 @@
 // SUPABASE CLIENT INITIALIZATION
 // ============================================
 
-// Replace these with your actual Supabase project credentials
-const SUPABASE_URL = 'https://your-project.supabase.co';
-const SUPABASE_ANON_KEY = 'your-anon-key-here';
+// Supabase project credentials - Ward Academy
+const SUPABASE_URL = 'https://lbxjqejzabylfqdoknhh.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxieGpxZWp6YWJ5bGZxZG9rbmhoIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjcxMDEzMDEsImV4cCI6MjA4MjY3NzMwMX0.bbtQiSh87-DNZc_PGlZwPZR4_o3IveWLV_RooSO4luA';
 
 // Initialize Supabase client
 // Note: Include the Supabase JavaScript library in your HTML:
