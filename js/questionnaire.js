@@ -54,6 +54,9 @@ function setupEventListeners() {
     // Page 3: UWorld conditionals
     setupUWorldConditionals();
 
+    // Page 4: English conditionals
+    setupEnglishConditionals();
+
     // Page 5: Anki conditionals
     setupAnkiConditionals();
 
@@ -63,18 +66,8 @@ function setupEventListeners() {
     // Page 7: Rotations
     setupRotationsHandlers();
 
-    // Page 8: Location conditional
-    document.getElementById('currentLocation').addEventListener('change', (e) => {
-        const value = e.target.value;
-        document.getElementById('otherLocationGroup').classList.toggle('hidden', value !== 'other');
-        document.getElementById('usaQuestionsSection').classList.toggle('hidden', value !== 'usa');
-    });
-
-    document.querySelectorAll('input[name="worksInUSA"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            document.getElementById('usEmploymentGroup').classList.toggle('hidden', e.target.value !== 'yes');
-        });
-    });
+    // Page 8: Background conditionals
+    setupBackgroundConditionals();
 }
 
 // Setup sliders for Page 2
@@ -117,28 +110,57 @@ function setupUWorldConditionals() {
     });
 }
 
+// Setup English conditional displays (Page 4)
+function setupEnglishConditionals() {
+    document.querySelectorAll('input[name="oetTaken"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            document.getElementById('oetScoresGroup').classList.toggle('hidden', e.target.value !== 'yes');
+        });
+    });
+
+    document.querySelectorAll('input[name="takingClasses"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            document.getElementById('englishSchoolGroup').classList.toggle('hidden', e.target.value !== 'yes');
+        });
+    });
+}
+
 // Setup Anki conditional displays
 function setupAnkiConditionals() {
     document.querySelectorAll('input[name="ankiDownloaded"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
-            document.getElementById('ankiDetailsSection').classList.toggle('hidden', e.target.value !== 'yes');
+            document.getElementById('ankiDetailsGroup').classList.toggle('hidden', e.target.value !== 'yes');
         });
     });
 
     document.querySelectorAll('input[name="ankiUsed"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
-            document.getElementById('ankiUsageSection').classList.toggle('hidden', e.target.value !== 'yes');
+            const isUsed = e.target.value === 'yes';
+            // Show all the detailed Anki questions if they've used it
+            if (isUsed) {
+                document.getElementById('ankiDetailsGroup')?.classList.remove('hidden');
+            }
         });
     });
 }
 
 // Setup Research conditional displays
 function setupResearchConditionals() {
-    document.getElementById('systematicReviewParticipation').addEventListener('change', (e) => {
-        const show = e.target.value && e.target.value !== 'none';
-        document.getElementById('systematicReviewStatusGroup').style.display = show ? 'block' : 'none';
+    // Systematic review participation conditional
+    document.querySelectorAll('input[name="systematicReview"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const value = e.target.value;
+            // Show details group if "outro" is selected
+            const showDetails = value === 'outro';
+            // Show status group if any option except "no" is selected
+            const showStatus = value !== 'no';
+
+            document.getElementById('sysRevDetailsGroup')?.classList.toggle('hidden', !showDetails);
+            document.getElementById('sysRevStatusGroup')?.classList.toggle('hidden', !showStatus);
+        });
     });
 
+    // Contacts conditional
     document.querySelectorAll('input[name="hasContacts"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
             document.getElementById('contactsSection').classList.toggle('hidden', e.target.value !== 'yes');
@@ -146,25 +168,68 @@ function setupResearchConditionals() {
     });
 
     // Add contact button
-    document.getElementById('addContactBtn').addEventListener('click', addContactField);
+    document.getElementById('addContactBtn')?.addEventListener('click', addContactField);
 }
 
 // Setup Rotations handlers
 function setupRotationsHandlers() {
-    document.querySelectorAll('input[name="hadObservership"]').forEach(radio => {
+    // Clerkship conditional
+    document.querySelectorAll('input[name="didClerkship"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
-            document.getElementById('observershipsSection').classList.toggle('hidden', e.target.value !== 'yes');
+            document.getElementById('clerkshipDetailsGroup')?.classList.toggle('hidden', e.target.value !== 'yes');
         });
     });
 
-    document.querySelectorAll('input[name="planMoreObserverships"]').forEach(radio => {
+    // Observership conditional
+    document.querySelectorAll('input[name="hasObservership"]').forEach(radio => {
         radio.addEventListener('change', (e) => {
-            document.getElementById('plannedObservershipsSection').classList.toggle('hidden', e.target.value !== 'yes');
+            document.getElementById('observershipDetailsGroup')?.classList.toggle('hidden', e.target.value !== 'yes');
         });
     });
 
-    document.getElementById('addObservershipBtn').addEventListener('click', () => addObservershipField(false));
-    document.getElementById('addPlannedObservershipBtn').addEventListener('click', () => addObservershipField(true));
+    // Future observerships conditional
+    document.querySelectorAll('input[name="plansFutureObs"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            document.getElementById('futureObsGroup')?.classList.toggle('hidden', e.target.value !== 'yes');
+        });
+    });
+
+    // Add observership button
+    document.getElementById('addObservershipBtn')?.addEventListener('click', addObservershipField);
+}
+
+// Setup Background conditional displays (Page 8)
+function setupBackgroundConditionals() {
+    // Current location conditional - shows different question sets
+    document.querySelectorAll('input[name="currentLocation"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const location = e.target.value;
+
+            // Show "other country" field if needed
+            document.getElementById('locationOtherGroup')?.classList.toggle('hidden', location !== 'outro');
+
+            // Show Brasil/Other questions or USA questions based on location
+            const showBrazilOther = (location === 'brasil' || location === 'outro');
+            const showUSA = (location === 'eua');
+
+            document.getElementById('brazilOtherQuestions')?.classList.toggle('hidden', !showBrazilOther);
+            document.getElementById('usaQuestions')?.classList.toggle('hidden', !showUSA);
+        });
+    });
+
+    // Works in USA conditional (within USA questions)
+    document.querySelectorAll('input[name="worksUSA"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            document.getElementById('howGotJobGroup')?.classList.toggle('hidden', e.target.value !== 'yes');
+        });
+    });
+
+    // Has children conditional
+    document.querySelectorAll('input[name="hasChildren"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            document.getElementById('childrenCountGroup')?.classList.toggle('hidden', e.target.value !== 'yes');
+        });
+    });
 }
 
 // Add contact field (Page 6)
@@ -491,25 +556,44 @@ async function savePageData(pageNum, data) {
         case 4: // English
             await sb.from('english_proficiency').upsert({
                 user_id: currentUser.id,
-                reading_comprehension: data.readingLevel,
-                vocabulary_level: data.vocabularyLevel,
-                listening_comprehension: data.listeningLevel,
+                // OET scores
+                oet_taken: data.oetTaken === 'yes',
+                oet_listening: parseFloat(data.oetListening) || null,
+                oet_reading: parseFloat(data.oetReading) || null,
+                oet_writing: parseFloat(data.oetWriting) || null,
+                oet_speaking: parseFloat(data.oetSpeaking) || null,
+                // English classes
+                taking_classes: data.takingClasses === 'yes',
+                english_school_name: data.englishSchool || null,
+                // Reading comprehension
+                understands_uworld: data.understandsUworld === 'yes',
+                frequent_word_lookup: data.frequentWordLookup === 'yes',
+                needs_translation: data.needsTranslation === 'yes',
+                // Listening comprehension
+                understands_lectures: data.understandsLectures === 'yes',
+                listening_difficulty: data.listeningDifficulty === 'yes',
                 updated_at: new Date().toISOString()
             });
             break;
 
         case 5: // Anki
+            // Collect devices from checkboxes
+            const devices = [];
+            document.querySelectorAll('input[name="devices"]:checked').forEach(cb => {
+                devices.push(cb.value);
+            });
+
             await sb.from('anki_info').upsert({
                 user_id: currentUser.id,
                 downloaded: data.ankiDownloaded === 'yes',
                 used: data.ankiUsed === 'yes',
                 uses_anking: data.usesAnking === 'yes',
-                usage_frequency: data.ankiFrequency,
-                creates_own_cards: data.createsCards,
-                devices_used: data.ankiDevices || [],
-                most_used_device: data.mostUsedDevice,
+                usage_frequency: data.ankiUsageFreq || null,
+                creates_own_cards: data.createsOwnCards || null,
+                devices_used: devices,
+                primary_device: data.primaryDevice || null,
                 average_cards_per_day: parseInt(data.avgCardsPerDay) || 0,
-                using_since: data.usingSince,
+                using_since: data.usingSince || null,
                 updated_at: new Date().toISOString()
             });
             break;
@@ -517,35 +601,90 @@ async function savePageData(pageNum, data) {
         case 6: // Research
             await sb.from('research_experience').upsert({
                 user_id: currentUser.id,
-                orcid_id: data.researchOrcid,
-                research_email: data.researchEmail,
-                research_institution: data.researchInstitution,
-                research_specialty: data.researchSpecialty,
-                research_department: data.researchDepartment,
-                experience_level: data.researchExperience,
-                systematic_review_participation: data.systematicReviewParticipation,
-                systematic_review_status: data.systematicReviewStatus,
-                research_interests: [data.interest1, data.interest2, data.interest3, data.interest4, data.interest5].filter(Boolean),
-                target_institutions: [data.institution1, data.institution2, data.institution3].filter(Boolean),
-                wants_to_research: data.wantsResearch,
-                can_help_with: data.canHelpWith,
+                // Confirmation data
+                orcid_id: data.confirmOrcid || data.researchOrcid,
+                research_email: data.confirmEmail,
+                full_name: data.confirmName,
+                research_institution: data.confirmInstitution,
+                research_specialty: data.confirmSpecialty,
+                research_department: data.confirmDepartment,
+                // Experience level
+                experience_level: data.researchExpLevel,
+                // Systematic review
+                participated_systematic_review: data.systematicReview !== 'no',
+                systematic_review_role: data.systematicReview,
+                systematic_review_details: data.sysRevDetails || null,
+                systematic_review_status: data.sysRevStatus || null,
+                // Research areas and institutions
+                research_area_1: data.researchArea1 || null,
+                research_area_2: data.researchArea2 || null,
+                research_area_3: data.researchArea3 || null,
+                research_area_4: data.researchArea4 || null,
+                research_area_5: data.researchArea5 || null,
+                target_institution_1: data.targetInstitution1 || null,
+                target_institution_2: data.targetInstitution2 || null,
+                target_institution_3: data.targetInstitution3 || null,
+                // Ward research
+                ward_research_timing: data.wardResearchTiming || null,
+                collaboration_stages: data.collaborationStages || null,
+                // Contacts
                 has_research_contacts: data.hasContacts === 'yes',
                 updated_at: new Date().toISOString()
             });
+
+            // Save contacts if any
+            if (data.hasContacts === 'yes') {
+                // Would need to collect contacts from the dynamic list
+                // This would require more complex logic
+            }
             break;
 
-        case 7: // Rotations - would need more complex logic
+        case 7: // Clinical rotations
+            await sb.from('clinical_rotations').upsert({
+                user_id: currentUser.id,
+                // Clerkship
+                did_clerkship: data.didClerkship === 'yes',
+                clerkship_details: data.clerkshipDetails || null,
+                // Observerships
+                has_observership: data.hasObservership === 'yes',
+                observership_count: parseInt(data.observershipCount) || 0,
+                // Future observerships
+                plans_future_obs: data.plansFutureObs === 'yes',
+                future_obs_count: parseInt(data.futureObsCount) || 0,
+                future_obs_when: data.futureObsWhen || null,
+                future_obs_institutions: data.futureObsInstitutions || null,
+                future_obs_specialties: data.futureObsSpecialties || null,
+                future_obs_type: data.futureObsType || null,
+                updated_at: new Date().toISOString()
+            });
+
+            // Save observership details would need more complex logic for the dynamic list
             break;
 
         case 8: // Personal background
             await sb.from('personal_background').upsert({
                 user_id: currentUser.id,
                 current_location: data.currentLocation,
-                personal_story: data.personalStory,
-                family_support: data.familySupport === 'yes',
-                us_immigration_story: data.usImmigrationStory,
-                current_visa: data.currentVisa,
-                us_employment_status: data.howGotJob,
+                other_location: data.otherLocation || null,
+                // Brasil/Other location questions
+                life_story: data.lifeStory || null,
+                family_situation: data.familySituation || null,
+                work_situation: data.workSituation || null,
+                why_usmle: data.whyUSMLE || null,
+                family_agreement: data.familyAgreement || null,
+                // USA location questions
+                how_moved_to_usa: data.howMovedUSA || null,
+                visa_type: data.visaTypeUSA || null,
+                how_got_visa: data.howGotVisa || null,
+                works_in_usa: data.worksUSA === 'yes',
+                how_got_job: data.howGotJob || null,
+                life_story_usa: data.lifeStoryUSA || null,
+                why_usmle_usa: data.whyUSMLE_USA || null,
+                // Standard family questions
+                has_children: data.hasChildren === 'yes',
+                children_count: parseInt(data.childrenCount) || 0,
+                is_married: data.isMarried === 'yes',
+                personal_notes: data.personalNotes || null,
                 updated_at: new Date().toISOString()
             });
             break;
