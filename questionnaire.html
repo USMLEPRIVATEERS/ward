@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ward Academy - Questionário</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">Ward Academy</div>
+        </div>
+    </header>
+
+    <div class="container questionnaire-container">
+        <h1>Questionário Inicial</h1>
+        <p>Por favor, complete este questionário para personalizarmos seu acompanhamento.</p>
+
+        <div class="progress-bar">
+            <div class="progress-fill" id="progressBar"></div>
+        </div>
+
+        <!-- PAGE 1: Personal Information -->
+        <div id="page1" class="question-page active">
+            <div class="card">
+                <h2>Informações Pessoais</h2>
+                <p>Esses dados são importantes para futuras submissões de pesquisas para congressos e revistas.</p>
+
+                <div class="form-group">
+                    <label for="fullName">Nome Completo *</label>
+                    <input type="text" id="fullName" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="emailConfirm">Confirmar Email *</label>
+                    <input type="email" id="emailConfirm" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="cpf">CPF *</label>
+                    <input type="text" id="cpf" placeholder="000.000.000-00" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="orcid">ORCID (se tiver)</label>
+                    <input type="text" id="orcid" placeholder="0000-0000-0000-0000">
+                    <small>Você pode preencher futuramente se ainda não tiver.</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="addressLine1">Endereço - Linha 1 *</label>
+                    <input type="text" id="addressLine1" placeholder="Rua, número" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="addressLine2">Endereço - Linha 2</label>
+                    <input type="text" id="addressLine2" placeholder="Complemento, apartamento">
+                </div>
+
+                <div class="form-group">
+                    <label for="city">Cidade *</label>
+                    <input type="text" id="city" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="stateProvince">Estado/Província *</label>
+                    <input type="text" id="stateProvince" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="postalCode">CEP/Código Postal *</label>
+                    <input type="text" id="postalCode" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="country">País *</label>
+                    <select id="country" required>
+                        <option value="">Selecione...</option>
+                        <option value="Brasil">Brasil</option>
+                        <option value="Estados Unidos">Estados Unidos</option>
+                        <option value="Portugal">Portugal</option>
+                        <option value="Espanha">Espanha</option>
+                        <option value="Reino Unido">Reino Unido</option>
+                        <option value="Alemanha">Alemanha</option>
+                        <option value="França">França</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="graduationDate">Data de Formatura em Medicina *</label>
+                    <input type="date" id="graduationDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="medicalSchool">Faculdade de Medicina *</label>
+                    <input type="text" id="medicalSchool" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="currentInstitution">Instituição Atual em que Trabalha *</label>
+                    <input type="text" id="currentInstitution" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="currentSpecialty">Especialidade Atual *</label>
+                    <input type="text" id="currentSpecialty" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="desiredSpecialty">Pretende atuar em qual especialidade nos EUA? *</label>
+                    <input type="text" id="desiredSpecialty" required>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="saveToDashboard()">Salvar e ir para Dashboard</button>
+                    <button class="btn btn-primary" onclick="nextPage(1)">Próxima</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 2: USMLE Information -->
+        <div id="page2" class="question-page">
+            <div class="card">
+                <h2>Informações sobre o USMLE</h2>
+
+                <div class="form-group">
+                    <label>Pretende seguir pelo caminho tradicional do USMLE ou pelo Alternate Pathway? *</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="pathwayTraditional" name="pathway" value="traditional" required>
+                            <label for="pathwayTraditional">Caminho Tradicional</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="pathwayAlternate" name="pathway" value="alternate">
+                            <label for="pathwayAlternate">Alternate Pathway</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Tem visto americano? *</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="visaYes" name="hasVisa" value="yes">
+                            <label for="visaYes">Sim</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="visaNo" name="hasVisa" value="no">
+                            <label for="visaNo">Não</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group hidden" id="visaTypeGroup">
+                    <label for="visaType">Qual visto?</label>
+                    <input type="text" id="visaType">
+                </div>
+
+                <div class="form-group">
+                    <label>Em qual etapa do processo está? *</label>
+                    <div class="checkbox-group">
+                        <div class="checkbox-item">
+                            <input type="radio" id="stageStarting" name="currentStage" value="starting">
+                            <label for="stageStarting">Ainda está iniciando</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="stageStep1" name="currentStage" value="step1_done">
+                            <label for="stageStep1">Já fez Step 1</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="stageStep2" name="currentStage" value="step2_done">
+                            <label for="stageStep2">Já fez Step 2 CK</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="stageOET" name="currentStage" value="oet_done">
+                            <label for="stageOET">Já fez OET</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="stageStep3" name="currentStage" value="step3_done">
+                            <label for="stageStep3">Já fez Step 3</label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="radio" id="stageOther" name="currentStage" value="other">
+                            <label for="stageOther">Outra situação</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group hidden" id="stageOtherGroup">
+                    <label for="stageOtherText">Descreva sua situação:</label>
+                    <textarea id="stageOtherText" rows="3"></textarea>
+                </div>
+
+                <div class="form-group" id="nextExamGroup">
+                    <label for="nextExamDate">Quando pretende fazer a próxima prova?</label>
+                    <input type="date" id="nextExamDate">
+                </div>
+
+                <h3>Planejamento de Estudo</h3>
+                <p>Arraste as barras para definir quantos meses pretende dedicar a cada fase:</p>
+
+                <div class="range-group">
+                    <label for="firstPassMonths">First Pass (Padrão: 6 meses)</label>
+                    <input type="range" id="firstPassMonths" class="range-slider" min="1" max="12" value="6">
+                    <div class="range-value"><span id="firstPassValue">6</span> meses</div>
+                </div>
+
+                <div class="range-group">
+                    <label for="secondPassMonths">Second Pass (Padrão: 2 meses)</label>
+                    <input type="range" id="secondPassMonths" class="range-slider" min="0" max="6" value="2">
+                    <div class="range-value"><span id="secondPassValue">2</span> meses</div>
+                </div>
+
+                <div class="range-group">
+                    <label for="dedicatedMonths">Dedicated (Padrão: 1 mês)</label>
+                    <input type="range" id="dedicatedMonths" class="range-slider" min="0" max="3" value="1">
+                    <div class="range-value"><span id="dedicatedValue">1</span> mês</div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="previousPage(2)">Anterior</button>
+                    <button class="btn btn-secondary" onclick="saveToDashboard()">Salvar e ir para Dashboard</button>
+                    <button class="btn btn-primary" onclick="nextPage(2)">Próxima</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 3: UWorld Preparation -->
+        <div id="page3" class="question-page">
+            <div class="card">
+                <h2>Preparação com UWorld</h2>
+
+                <div class="form-group">
+                    <label>Já comprou o UWorld? *</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="uworldBoughtYes" name="uworldBought" value="yes">
+                            <label for="uworldBoughtYes">Sim</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="uworldBoughtNo" name="uworldBought" value="no">
+                            <label for="uworldBoughtNo">Não</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group hidden" id="uworldActivatedGroup">
+                    <label>Já ativou? *</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="uworldActivatedYes" name="uworldActivated" value="yes">
+                            <label for="uworldActivatedYes">Sim</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="uworldActivatedNo" name="uworldActivated" value="no">
+                            <label for="uworldActivatedNo">Não</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group hidden" id="uworldExpirationGroup">
+                    <label for="uworldExpiration">Quando vence?</label>
+                    <input type="date" id="uworldExpiration">
+                </div>
+
+                <div class="form-group hidden" id="uworldSubscriptionGroup">
+                    <label>Quanto tempo de assinatura escolheu?</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="subscription6m" name="uworldSubscription" value="6months">
+                            <label for="subscription6m">6 meses</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="subscription1y" name="uworldSubscription" value="1year">
+                            <label for="subscription1y">1 ano</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="subscriptionOther" name="uworldSubscription" value="other">
+                            <label for="subscriptionOther">Outra opção</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group hidden" id="uworldUsageGroup">
+                    <h3>Uso do UWorld</h3>
+
+                    <div class="form-group">
+                        <label for="questionsDone">Quantas questões já fez?</label>
+                        <input type="number" id="questionsDone" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="overallPercentage">Qual é a porcentagem de acertos geral?</label>
+                        <input type="number" id="overallPercentage" min="0" max="100" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lowestPercentage">Menor porcentagem (opcional)</label>
+                        <input type="number" id="lowestPercentage" min="0" max="100" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="lowestSystem">Qual era esse teste (system)?</label>
+                        <input type="text" id="lowestSystem">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="highestPercentage">Maior porcentagem (opcional)</label>
+                        <input type="number" id="highestPercentage" min="0" max="100" step="0.1">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="highestSystem">Qual era esse teste (system)?</label>
+                        <input type="text" id="highestSystem">
+                    </div>
+
+                    <div class="form-group">
+                        <label>Quais Systems e Categories já fez questões?</label>
+                        <p><small>Clique nos systems para expandir e marcar as categories concluídas. Marque com ⚠️ as que teve mais dificuldade.</small></p>
+                        <div id="systemsCategoriesList" class="toggle-list">
+                            <!-- Will be populated by JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="previousPage(3)">Anterior</button>
+                    <button class="btn btn-secondary" onclick="saveToDashboard()">Salvar e ir para Dashboard</button>
+                    <button class="btn btn-primary" onclick="nextPage(3)">Próxima</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Continue with remaining pages... -->
+        <div id="completionMessage" class="card hidden">
+            <h2>Questionário Completo!</h2>
+            <p>Obrigado por completar o questionário inicial. Suas informações foram salvas com sucesso.</p>
+            <a href="dashboard.html" class="btn btn-primary">Ir para o Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/questionnaire-data.js"></script>
+    <script src="js/questionnaire.js"></script>
+</body>
+</html>

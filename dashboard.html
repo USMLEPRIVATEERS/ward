@@ -1,0 +1,625 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ward Academy - Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">Ward Academy</div>
+            <nav id="mainNav">
+                <!-- Navigation will be populated by JavaScript based on user type -->
+            </nav>
+        </div>
+    </header>
+
+    <div class="container">
+        <h1>Dashboard</h1>
+        <p id="welcomeMessage">Bem-vindo(a)!</p>
+
+        <div id="dashboardContent">
+            <!-- Content will be loaded based on user type -->
+        </div>
+    </div>
+
+    <!-- Daily Update Modal -->
+    <div id="dailyUpdateModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeDailyUpdateModal()">&times;</button>
+            <h2>Como tem sido sua preparação nos últimos dias?</h2>
+            <form id="dailyUpdateForm">
+                <div class="form-group">
+                    <label for="updateText">Escreva sobre sua preparação (opcional):</label>
+                    <textarea id="updateText" rows="4" maxlength="500"></textarea>
+                    <div class="char-counter"><span id="charCount">0</span>/500</div>
+                </div>
+
+                <div class="form-group">
+                    <label>Como você está se sentindo?</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="statusGood" name="status" value="good">
+                            <label for="statusGood">Tranquilo, tudo sob controle</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="statusHelp" name="status" value="need_help">
+                            <label for="statusHelp">Preciso de ajuda</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="statusPaused" name="status" value="paused">
+                            <label for="statusPaused">Estou parado no momento</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="statusSkip" name="status" value="skipped" checked>
+                            <label for="statusSkip">Pular esta atualização</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="closeDailyUpdateModal()">Fechar sem salvar</button>
+                    <button type="submit" class="btn btn-primary">Salvar atualização</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Change Password Modal -->
+    <div id="changePasswordModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeChangePasswordModal()">&times;</button>
+            <h2>Trocar Senha</h2>
+            <form id="changePasswordForm">
+                <div class="form-group">
+                    <label for="oldPassword">Senha Atual</label>
+                    <input type="password" id="oldPassword" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="newPassword">Nova Senha</label>
+                    <input type="password" id="newPassword" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirmar Nova Senha</label>
+                    <input type="password" id="confirmPassword" required>
+                </div>
+
+                <div id="passwordError" class="alert alert-danger hidden"></div>
+                <div id="passwordSuccess" class="alert alert-success hidden"></div>
+
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="closeChangePasswordModal()">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Alterar Senha</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script>
+        // Require authentication
+        requireAuth();
+
+        const currentUser = getCurrentUser();
+        const userType = getUserType();
+        const userId = getUserId();
+
+        // Initialize dashboard
+        async function initDashboard() {
+            await loadUserProfile();
+            setupNavigation();
+            await loadDashboardContent();
+
+            // Check if user completed questionnaire
+            const progress = await getQuestionnaireProgress(userId);
+            if (progress.success && !progress.data.completed && userType === 'student') {
+                // Don't show daily update modal if questionnaire not completed
+            } else {
+                // Check if should show daily update modal (students only)
+                const lastUpdate = localStorage.getItem('lastDailyUpdate_' + userId);
+                const today = new Date().toDateString();
+
+                if (userType === 'student' && lastUpdate !== today) {
+                    setTimeout(() => showDailyUpdateModal(), 1000);
+                }
+            }
+        }
+
+        async function loadUserProfile() {
+            const profile = await getUserProfile(userId);
+            if (profile.success && profile.data) {
+                document.getElementById('welcomeMessage').textContent =
+                    `Bem-vindo(a), ${profile.data.full_name || currentUser.email}!`;
+            }
+        }
+
+        function setupNavigation() {
+            const nav = document.getElementById('mainNav');
+            let navItems = [];
+
+            if (userType === 'student') {
+                navItems = [
+                    { text: 'Dashboard', href: 'dashboard.html', active: true },
+                    { text: 'Perfil', href: 'profile.html' },
+                    { text: 'Questionário', href: 'questionnaire.html' },
+                    { text: 'Cronograma', href: 'schedule.html' },
+                    { text: 'Landmarks', href: 'landmarks.html' },
+                    { text: 'Links', href: 'links.html' },
+                    { text: 'Blog', href: 'blog.html' },
+                    { text: 'Pesquisa', href: 'research.html' },
+                    { text: 'Sair', href: '#', onclick: 'logout()' }
+                ];
+            } else if (userType.startsWith('mentor_')) {
+                navItems = [
+                    { text: 'Dashboard', href: 'dashboard.html', active: true },
+                    { text: 'Alunos', href: 'students.html' },
+                    { text: 'Links', href: 'links.html' },
+                    { text: 'Blog', href: 'blog.html' },
+                    { text: 'Pesquisa', href: 'research.html' },
+                    { text: 'Sair', href: '#', onclick: 'logout()' }
+                ];
+
+                if (userType === 'mentor_marcos') {
+                    navItems.splice(1, 0, { text: 'Admin', href: 'admin.html' });
+                }
+            }
+
+            const navList = document.createElement('ul');
+            navItems.forEach(item => {
+                const li = document.createElement('li');
+                const a = document.createElement('a');
+                a.textContent = item.text;
+                a.href = item.href;
+                if (item.active) a.classList.add('active');
+                if (item.onclick) {
+                    a.onclick = (e) => {
+                        e.preventDefault();
+                        eval(item.onclick);
+                    };
+                }
+                li.appendChild(a);
+                navList.appendChild(li);
+            });
+
+            nav.appendChild(navList);
+        }
+
+        async function loadDashboardContent() {
+            const content = document.getElementById('dashboardContent');
+
+            if (userType === 'student') {
+                await loadStudentDashboard(content);
+            } else if (userType.startsWith('mentor_')) {
+                await loadMentorDashboard(content);
+            }
+        }
+
+        async function loadStudentDashboard(container) {
+            // Get user settings
+            const settingsQuery = await initSupabase().from('user_settings').select('*').eq('user_id', userId).single();
+            const settings = settingsQuery.data || {};
+
+            // Check questionnaire progress
+            const progress = await getQuestionnaireProgress(userId);
+
+            container.innerHTML = `
+                <div class="dashboard-grid">
+                    ${!progress.data.completed ? `
+                    <div class="dashboard-card">
+                        <h3>Completar Questionário</h3>
+                        <p>Você ainda não completou o questionário inicial.</p>
+                        <a href="questionnaire.html" class="btn btn-primary">Continuar Questionário</a>
+                    </div>
+                    ` : ''}
+
+                    <div class="dashboard-card">
+                        <h3>Meu Perfil</h3>
+                        <p>Visualize e edite suas informações pessoais.</p>
+                        <a href="profile.html" class="btn btn-primary">Ver Perfil</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Preparação Atual</h3>
+                        <p>Estudando para: <strong id="currentPrep">${settings.current_exam_prep || 'Não definido'}</strong></p>
+                        <button class="btn btn-secondary" onclick="updateCurrentPrep()">Atualizar</button>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Segurança</h3>
+                        <p>Altere sua senha de acesso.</p>
+                        <button class="btn btn-primary" onclick="showChangePasswordModal()">Trocar Senha</button>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Recados dos Mentores</h3>
+                        <div id="messagesContainer">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Repositório de Links</h3>
+                        <p>Acesse materiais e recursos úteis.</p>
+                        <a href="links.html" class="btn btn-primary">Ver Links</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Diários de Estudo</h3>
+                        <p>Diário de Estudos: <strong>${settings.study_diary_enabled ? 'Ativado' : 'Desativado'}</strong></p>
+                        <p>Diário UWorld: <strong>${settings.uworld_diary_enabled ? 'Ativado' : 'Desativado'}</strong></p>
+                        <button class="btn btn-secondary" onclick="toggleDiaries()">Configurar</button>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Landmarks</h3>
+                        <p>Acompanhe suas chamadas e marcos importantes.</p>
+                        <a href="landmarks.html" class="btn btn-primary">Ver Landmarks</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Cronograma</h3>
+                        <p>Visualize seu cronograma de estudos.</p>
+                        <a href="schedule.html" class="btn btn-primary">Ver Cronograma</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Blog da Ward</h3>
+                        <p>Compartilhe experiências com outros alunos.</p>
+                        <a href="blog.html" class="btn btn-primary">Acessar Blog</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Pesquisa</h3>
+                        <p>Gerencie seus projetos de pesquisa.</p>
+                        <a href="research.html" class="btn btn-primary">Ver Pesquisas</a>
+                    </div>
+                </div>
+            `;
+
+            // Load messages
+            await loadMessages();
+        }
+
+        async function loadMentorDashboard(container) {
+            if (userType === 'mentor_iria') {
+                await loadIriaDashboard(container);
+            } else if (userType === 'mentor_marcos') {
+                await loadMarcosDashboard(container);
+            } else if (userType === 'mentor_guilherme') {
+                await loadGuilhermeDashboard(container);
+            } else if (userType === 'mentor_romulo') {
+                await loadRomuloDashboard(container);
+            }
+        }
+
+        async function loadIriaDashboard(container) {
+            container.innerHTML = `
+                <div class="card">
+                    <h2>Dashboard da Dra. Iria</h2>
+                    <p>Acompanhamento de alunos e atividades</p>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>Alunos</h3>
+                        <p>Visualize e gerencie seus alunos.</p>
+                        <a href="students.html" class="btn btn-primary">Ver Alunos</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Chamadas Pendentes</h3>
+                        <div id="pendingCalls">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Chamadas Urgentes</h3>
+                        <div id="urgentCalls">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Atualizações Recentes</h3>
+                        <div id="recentUpdates">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Blog</h3>
+                        <p>Faça posts e interaja com os alunos.</p>
+                        <a href="blog.html" class="btn btn-primary">Acessar Blog</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Links</h3>
+                        <p>Adicione recursos úteis para os alunos.</p>
+                        <a href="links.html" class="btn btn-primary">Gerenciar Links</a>
+                    </div>
+                </div>
+
+                <div class="card mt-4">
+                    <div class="card-header">
+                        <h3 class="card-title">Linha do Tempo - Atividades Recentes</h3>
+                    </div>
+                    <div id="timeline">
+                        <div class="spinner"></div>
+                    </div>
+                </div>
+            `;
+
+            await loadMentorData();
+        }
+
+        async function loadMarcosDashboard(container) {
+            container.innerHTML = `
+                <div class="card">
+                    <h2>Dashboard do Marcos</h2>
+                    <p>Administração e gerenciamento de pesquisa</p>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>Administração</h3>
+                        <p>Gerencie usuários e configurações.</p>
+                        <a href="admin.html" class="btn btn-primary">Painel Admin</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Alunos</h3>
+                        <p>Visualize todos os alunos.</p>
+                        <a href="students.html" class="btn btn-primary">Ver Alunos</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Pesquisas</h3>
+                        <p>Gerencie todos os projetos de pesquisa.</p>
+                        <a href="research.html" class="btn btn-primary">Ver Pesquisas</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Chamadas Pendentes</h3>
+                        <div id="pendingCalls">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Blog</h3>
+                        <p>Faça posts e interaja com os alunos.</p>
+                        <a href="blog.html" class="btn btn-primary">Acessar Blog</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Links</h3>
+                        <p>Adicione recursos úteis.</p>
+                        <a href="links.html" class="btn btn-primary">Gerenciar Links</a>
+                    </div>
+                </div>
+            `;
+
+            await loadMentorData();
+        }
+
+        async function loadGuilhermeDashboard(container) {
+            container.innerHTML = `
+                <div class="card">
+                    <h2>Dashboard do Guilherme</h2>
+                    <p>Acompanhamento de Anki e estudos</p>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>Alunos</h3>
+                        <p>Visualize seus alunos.</p>
+                        <a href="students.html" class="btn btn-primary">Ver Alunos</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Chamadas Pendentes</h3>
+                        <div id="pendingCalls">
+                            <div class="spinner"></div>
+                        </div>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Blog</h3>
+                        <p>Faça posts e interaja com os alunos.</p>
+                        <a href="blog.html" class="btn btn-primary">Acessar Blog</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Links</h3>
+                        <p>Adicione recursos sobre Anki.</p>
+                        <a href="links.html" class="btn btn-primary">Gerenciar Links</a>
+                    </div>
+                </div>
+            `;
+
+            await loadMentorData();
+        }
+
+        async function loadRomuloDashboard(container) {
+            container.innerHTML = `
+                <div class="card">
+                    <h2>Dashboard do Rômulo</h2>
+                    <p>Coordenação de pesquisa</p>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="dashboard-card">
+                        <h3>Pesquisas</h3>
+                        <p>Gerencie projetos de pesquisa.</p>
+                        <a href="research.html" class="btn btn-primary">Ver Pesquisas</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Alunos</h3>
+                        <p>Visualize alunos em pesquisa.</p>
+                        <a href="students.html" class="btn btn-primary">Ver Alunos</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Blog</h3>
+                        <p>Compartilhe informações sobre pesquisa.</p>
+                        <a href="blog.html" class="btn btn-primary">Acessar Blog</a>
+                    </div>
+
+                    <div class="dashboard-card">
+                        <h3>Links</h3>
+                        <p>Adicione recursos de pesquisa.</p>
+                        <a href="links.html" class="btn btn-primary">Gerenciar Links</a>
+                    </div>
+                </div>
+            `;
+        }
+
+        async function loadMessages() {
+            const messagesResult = await getMessages(userId);
+            const container = document.getElementById('messagesContainer');
+
+            if (messagesResult.success && messagesResult.data.length > 0) {
+                const unreadMessages = messagesResult.data.filter(m => !m.is_read);
+
+                if (unreadMessages.length === 0) {
+                    container.innerHTML = '<p>Nenhum recado novo.</p>';
+                } else {
+                    container.innerHTML = unreadMessages.map(msg => `
+                        <div class="alert alert-info" style="margin-bottom: 0.5rem;">
+                            <p><strong>${msg.sender[0]?.user_profiles?.full_name || 'Mentor'}</strong></p>
+                            <p>${msg.message_text}</p>
+                            <button class="btn btn-secondary" style="padding: 0.25rem 0.5rem; font-size: 0.875rem;"
+                                    onclick="markAsRead('${msg.id}')">Marcar como lido</button>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                container.innerHTML = '<p>Nenhum recado.</p>';
+            }
+        }
+
+        async function markAsRead(messageId) {
+            const result = await markMessageAsRead(messageId);
+            if (result.success) {
+                await loadMessages();
+            }
+        }
+
+        async function loadMentorData() {
+            // Load pending calls, urgent calls, etc.
+            // This would query landmarks and other data
+            const pendingCallsDiv = document.getElementById('pendingCalls');
+            if (pendingCallsDiv) {
+                pendingCallsDiv.innerHTML = '<p>Carregando...</p>';
+                // Implementation would go here
+            }
+        }
+
+        // Daily Update Modal functions
+        function showDailyUpdateModal() {
+            document.getElementById('dailyUpdateModal').classList.add('active');
+        }
+
+        function closeDailyUpdateModal() {
+            document.getElementById('dailyUpdateModal').classList.remove('active');
+        }
+
+        document.getElementById('updateText').addEventListener('input', (e) => {
+            document.getElementById('charCount').textContent = e.target.value.length;
+        });
+
+        document.getElementById('dailyUpdateForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const text = document.getElementById('updateText').value;
+            const status = document.querySelector('input[name="status"]:checked').value;
+
+            if (status !== 'skipped') {
+                await saveDailyUpdate(userId, text, status);
+            }
+
+            localStorage.setItem('lastDailyUpdate_' + userId, new Date().toDateString());
+            closeDailyUpdateModal();
+        });
+
+        // Change Password Modal functions
+        function showChangePasswordModal() {
+            document.getElementById('changePasswordModal').classList.add('active');
+        }
+
+        function closeChangePasswordModal() {
+            document.getElementById('changePasswordModal').classList.remove('active');
+            document.getElementById('changePasswordForm').reset();
+            document.getElementById('passwordError').classList.add('hidden');
+            document.getElementById('passwordSuccess').classList.add('hidden');
+        }
+
+        document.getElementById('changePasswordForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const oldPassword = document.getElementById('oldPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmPassword = document.getElementById('confirmPassword').value;
+            const errorDiv = document.getElementById('passwordError');
+            const successDiv = document.getElementById('passwordSuccess');
+
+            errorDiv.classList.add('hidden');
+            successDiv.classList.add('hidden');
+
+            if (newPassword !== confirmPassword) {
+                errorDiv.textContent = 'As senhas não coincidem.';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            if (newPassword.length < 6) {
+                errorDiv.textContent = 'A senha deve ter pelo menos 6 caracteres.';
+                errorDiv.classList.remove('hidden');
+                return;
+            }
+
+            const result = await changePassword(userId, oldPassword, newPassword);
+
+            if (result.success) {
+                successDiv.textContent = 'Senha alterada com sucesso!';
+                successDiv.classList.remove('hidden');
+                setTimeout(closeChangePasswordModal, 2000);
+            } else {
+                errorDiv.textContent = result.error || 'Erro ao alterar senha.';
+                errorDiv.classList.remove('hidden');
+            }
+        });
+
+        function updateCurrentPrep() {
+            const current = document.getElementById('currentPrep').textContent;
+            const options = ['Step 1', 'Step 2 CK', 'Step 3', 'OET', 'Outro'];
+            const choice = prompt('Escolha sua preparação atual:\n1. Step 1\n2. Step 2 CK\n3. Step 3\n4. OET\n5. Outro', current);
+
+            if (choice !== null) {
+                document.getElementById('currentPrep').textContent = choice;
+                // Save to database
+                initSupabase().from('user_settings').upsert({
+                    user_id: userId,
+                    current_exam_prep: choice,
+                    updated_at: new Date()
+                });
+            }
+        }
+
+        function toggleDiaries() {
+            window.location.href = 'profile.html#diaries';
+        }
+
+        // Initialize dashboard on load
+        initDashboard();
+    </script>
+</body>
+</html>
