@@ -1,0 +1,446 @@
+/* ============================================================================
+   WARD ACADEMY - SCHEDULE PAGE STYLES
+   ============================================================================ */
+
+/* ============================================================================
+   SCHEDULE SUMMARY
+   ============================================================================ */
+.schedule-summary {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-card {
+    background: var(--color-white);
+    border: 2px solid var(--color-gray-medium);
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: var(--transition);
+}
+
+.summary-card:hover {
+    box-shadow: var(--shadow-md);
+    border-color: var(--color-orange-light);
+}
+
+.summary-card h3 {
+    margin: 0 0 1rem 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--color-gray-dark);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* ============================================================================
+   PROGRESS CIRCLE
+   ============================================================================ */
+.progress-circle {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: conic-gradient(var(--color-orange) 0deg, var(--color-gray-light) 0deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+    position: relative;
+    transition: var(--transition);
+}
+
+.progress-circle::before {
+    content: '';
+    position: absolute;
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: var(--color-white);
+}
+
+.progress-circle span {
+    position: relative;
+    z-index: 1;
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: var(--color-orange);
+}
+
+.summary-card p {
+    margin: 0;
+    font-size: 0.875rem;
+    color: var(--color-gray-dark);
+}
+
+/* ============================================================================
+   STAT NUMBERS
+   ============================================================================ */
+.stat-number {
+    font-size: 3rem;
+    font-weight: 700;
+    color: var(--color-orange);
+    margin: 1rem 0;
+    line-height: 1;
+}
+
+.stat-number.stat-warning {
+    color: var(--color-danger);
+}
+
+/* ============================================================================
+   DELAYS CONTAINER
+   ============================================================================ */
+.delays-container {
+    background: #fff3e0;
+    border: 2px solid var(--color-orange);
+    border-radius: 8px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.delays-container h3 {
+    margin: 0 0 1rem 0;
+    color: var(--color-orange);
+    font-size: 1.125rem;
+    font-weight: 700;
+}
+
+.delay-card {
+    background: var(--color-white);
+    border: 1px solid var(--color-orange);
+    border-radius: 4px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+}
+
+.delay-card:last-child {
+    margin-bottom: 0;
+}
+
+.delay-period {
+    margin-bottom: 0.5rem;
+    font-size: 0.9rem;
+    color: var(--color-black);
+}
+
+.delay-period strong {
+    color: var(--color-orange);
+}
+
+.delay-reason {
+    margin-bottom: 0.75rem;
+    color: var(--color-gray-dark);
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.delay-reason strong {
+    color: var(--color-black);
+}
+
+/* ============================================================================
+   TABLE FILTERS
+   ============================================================================ */
+.table-filters {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.input-search {
+    flex: 1;
+    min-width: 200px;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 2px solid var(--color-gray-medium);
+    border-radius: 8px;
+    font-family: inherit;
+    transition: var(--transition);
+}
+
+.input-search:focus {
+    outline: none;
+    border-color: var(--color-orange);
+    box-shadow: 0 0 0 3px var(--color-orange-light);
+}
+
+.select-filter {
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 2px solid var(--color-gray-medium);
+    border-radius: 8px;
+    font-family: inherit;
+    background: var(--color-white);
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.select-filter:focus {
+    outline: none;
+    border-color: var(--color-orange);
+    box-shadow: 0 0 0 3px var(--color-orange-light);
+}
+
+/* ============================================================================
+   SCHEDULE TABLE
+   ============================================================================ */
+.table-wrapper {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.schedule-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: var(--color-white);
+}
+
+.schedule-table thead {
+    background: var(--color-orange);
+    color: var(--color-white);
+}
+
+.schedule-table th {
+    padding: 1rem;
+    text-align: left;
+    font-weight: 700;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.schedule-table th.text-center {
+    text-align: center;
+}
+
+.schedule-table tbody tr {
+    border-bottom: 1px solid var(--color-gray-medium);
+    transition: var(--transition);
+}
+
+.schedule-table tbody tr:hover {
+    background: var(--color-gray-light);
+}
+
+.schedule-table tbody tr.completed-row {
+    background: #f1f8f4;
+    opacity: 0.85;
+}
+
+.schedule-table tbody tr.completed-row:hover {
+    background: #e8f5e9;
+}
+
+.schedule-table td {
+    padding: 1rem;
+    font-size: 0.9rem;
+}
+
+.schedule-table td.text-center {
+    text-align: center;
+}
+
+.schedule-table td strong {
+    color: var(--color-orange);
+    font-weight: 600;
+}
+
+/* ============================================================================
+   STATUS BADGES
+   ============================================================================ */
+.status-badge {
+    padding: 0.375rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.status-badge.completed {
+    background: var(--color-success);
+    color: var(--color-white);
+}
+
+.status-badge.pending {
+    background: var(--color-orange);
+    color: var(--color-white);
+}
+
+/* ============================================================================
+   EMPTY STATES
+   ============================================================================ */
+.no-data-cell {
+    text-align: center !important;
+    padding: 3rem 1.5rem !important;
+    color: var(--color-gray-dark);
+}
+
+.no-data-cell p {
+    margin: 0.5rem 0;
+    font-size: 1rem;
+}
+
+.no-data-cell p:first-child {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-black);
+}
+
+.error-cell {
+    text-align: center !important;
+    padding: 3rem 1.5rem !important;
+    color: var(--color-danger);
+    font-weight: 600;
+}
+
+/* ============================================================================
+   ALERT INFO
+   ============================================================================ */
+.alert {
+    padding: 1rem;
+    border-radius: 4px;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.alert-info {
+    background: #e3f2fd;
+    border: 1px solid #2196f3;
+    color: #1976d2;
+}
+
+.alert-info strong {
+    color: #0d47a1;
+}
+
+/* ============================================================================
+   BUTTON VARIANTS
+   ============================================================================ */
+.btn-sm {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+.btn-danger {
+    background: var(--color-danger);
+    color: var(--color-white);
+    border: none;
+}
+
+.btn-danger:hover {
+    background: #d32f2f;
+}
+
+/* ============================================================================
+   WELCOME SECTION OVERRIDE
+   ============================================================================ */
+.welcome-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.welcome-section h1 {
+    margin: 0;
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+@media (max-width: 768px) {
+    .schedule-summary {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .summary-card {
+        padding: 1rem;
+    }
+
+    .progress-circle {
+        width: 100px;
+        height: 100px;
+    }
+
+    .progress-circle::before {
+        width: 75px;
+        height: 75px;
+    }
+
+    .progress-circle span {
+        font-size: 1.5rem;
+    }
+
+    .stat-number {
+        font-size: 2.5rem;
+    }
+
+    .table-filters {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .input-search,
+    .select-filter {
+        width: 100%;
+    }
+
+    .schedule-table th,
+    .schedule-table td {
+        padding: 0.75rem 0.5rem;
+        font-size: 0.85rem;
+    }
+
+    .schedule-table th {
+        font-size: 0.8rem;
+    }
+
+    .welcome-section {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .welcome-section button {
+        width: 100%;
+    }
+}
+
+@media (max-width: 480px) {
+    .summary-card h3 {
+        font-size: 0.8rem;
+    }
+
+    .summary-card p {
+        font-size: 0.8rem;
+    }
+
+    .stat-number {
+        font-size: 2rem;
+    }
+
+    .schedule-table {
+        font-size: 0.8rem;
+    }
+
+    .schedule-table th,
+    .schedule-table td {
+        padding: 0.5rem 0.375rem;
+    }
+
+    .status-badge {
+        font-size: 0.7rem;
+        padding: 0.25rem 0.5rem;
+    }
+
+    .btn-sm {
+        font-size: 0.8rem;
+        padding: 0.25rem 0.5rem;
+    }
+}
