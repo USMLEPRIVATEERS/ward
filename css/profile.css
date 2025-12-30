@@ -1,0 +1,346 @@
+/* ============================================================================
+   WARD ACADEMY - PROFILE PAGE STYLES
+   ============================================================================ */
+
+/* ============================================================================
+   TAB NAVIGATION
+   ============================================================================ */
+.tab-navigation {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid var(--color-gray-medium);
+    background: var(--color-gray-light);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.tab-btn {
+    padding: 1rem 1.5rem;
+    background: none;
+    border: none;
+    border-bottom: 3px solid transparent;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: var(--color-gray-dark);
+    transition: var(--transition);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.tab-btn:hover {
+    background: var(--color-white);
+    color: var(--color-orange);
+}
+
+.tab-btn.active {
+    background: var(--color-white);
+    color: var(--color-orange);
+    border-bottom-color: var(--color-orange);
+}
+
+/* ============================================================================
+   TAB CONTENT
+   ============================================================================ */
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+/* ============================================================================
+   SECTION TITLE
+   ============================================================================ */
+.section-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--color-black);
+    margin: 0 0 1.5rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid var(--color-orange-light);
+}
+
+.section-title.mt-3 {
+    margin-top: 2rem;
+}
+
+/* ============================================================================
+   FORM LAYOUTS
+   ============================================================================ */
+.form-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group.full-width {
+    grid-column: 1 / -1;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--color-black);
+    font-size: 0.9rem;
+}
+
+/* ============================================================================
+   INPUT FIELDS
+   ============================================================================ */
+.input-profile {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 1rem;
+    border: 2px solid var(--color-gray-medium);
+    border-radius: 8px;
+    font-family: inherit;
+    transition: var(--transition);
+    background: var(--color-white);
+}
+
+.input-profile:focus {
+    outline: none;
+    border-color: var(--color-orange);
+    box-shadow: 0 0 0 3px var(--color-orange-light);
+}
+
+.input-profile:disabled,
+.input-profile[readonly] {
+    background: var(--color-gray-light);
+    cursor: not-allowed;
+    opacity: 0.8;
+}
+
+.textarea-profile {
+    resize: vertical;
+    min-height: 100px;
+    line-height: 1.6;
+}
+
+/* ============================================================================
+   RADIO GROUPS
+   ============================================================================ */
+.radio-group-inline {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+/* ============================================================================
+   UWORLD SYSTEMS LIST
+   ============================================================================ */
+.uworld-systems-list {
+    margin-top: 1.5rem;
+}
+
+.uworld-category {
+    margin-bottom: 1.5rem;
+}
+
+.uworld-category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem 1rem;
+    background: var(--color-orange-light);
+    border-left: 4px solid var(--color-orange);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--transition);
+    margin-bottom: 0.75rem;
+}
+
+.uworld-category-header:hover {
+    background: var(--color-orange);
+    color: var(--color-white);
+}
+
+.uworld-category-header.collapsed {
+    margin-bottom: 0;
+}
+
+.uworld-category-title {
+    font-weight: 600;
+    font-size: 1rem;
+}
+
+.uworld-category-arrow {
+    font-size: 1.2rem;
+    transition: transform 0.3s ease;
+}
+
+.uworld-category-header.collapsed .uworld-category-arrow {
+    transform: rotate(-90deg);
+}
+
+.uworld-systems-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 0.75rem;
+    padding-left: 1rem;
+}
+
+.uworld-system-item {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 0.75rem;
+    background: var(--color-gray-light);
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.uworld-system-item.done {
+    background: #e8f5e9;
+    color: var(--color-success);
+}
+
+.uworld-difficulty {
+    font-size: 0.75rem;
+    padding: 0.125rem 0.375rem;
+    border-radius: 3px;
+    font-weight: 600;
+}
+
+.uworld-difficulty.easy {
+    background: #c8e6c9;
+    color: #2e7d32;
+}
+
+.uworld-difficulty.medium {
+    background: #fff9c4;
+    color: #f57c00;
+}
+
+.uworld-difficulty.hard {
+    background: #ffccbc;
+    color: #d84315;
+}
+
+/* ============================================================================
+   CARD FOOTER
+   ============================================================================ */
+.card-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+    padding: 1.5rem;
+    border-top: 1px solid var(--color-gray-medium);
+    background: var(--color-gray-light);
+}
+
+/* ============================================================================
+   BUTTON VARIANTS
+   ============================================================================ */
+.btn-success {
+    background-color: var(--color-success);
+    color: var(--color-white);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.btn-success:hover {
+    background-color: #388e3c;
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+.btn-success:active {
+    transform: translateY(0);
+}
+
+/* ============================================================================
+   EDIT MODE STYLES
+   ============================================================================ */
+body.edit-mode .input-profile:not([type="email"]) {
+    background: var(--color-white);
+    cursor: text;
+}
+
+body.edit-mode .input-profile[readonly] {
+    background: var(--color-gray-light);
+    cursor: not-allowed;
+}
+
+/* ============================================================================
+   EMPTY STATE
+   ============================================================================ */
+.empty-state {
+    text-align: center;
+    padding: 3rem 1.5rem;
+    color: var(--color-gray-dark);
+}
+
+.empty-state .icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+}
+
+.empty-state p {
+    font-size: 1rem;
+    margin: 0;
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+@media (max-width: 768px) {
+    .tab-navigation {
+        flex-wrap: nowrap;
+        overflow-x: auto;
+    }
+
+    .tab-btn {
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .card-footer {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .card-footer .btn {
+        width: 100%;
+    }
+
+    .uworld-systems-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .radio-group-inline {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .section-title {
+        font-size: 1rem;
+    }
+
+    .input-profile {
+        font-size: 0.9rem;
+        padding: 0.625rem;
+    }
+}
