@@ -1,776 +1,764 @@
-// Ward Academy - Questionnaire Logic
-// Manages multi-page questionnaire with progress saving
+/* ============================================================================
+   WARD ACADEMY - QUESTIONNAIRE (11 STEPS)
+   ============================================================================ */
 
-let currentPage = 1;
-const totalPages = 8;
-let currentUser = getCurrentUser();
-let formData = {};
+// State management
+let currentStep = 1;
+const totalSteps = 11;
+let userData = {
+    // Step 1: Basic Info
+    exam_taking: '',
+    study_start_date: '',
+    test_date: '',
 
-if (!currentUser) {
-    window.location.href = 'index.html';
-}
+    // Step 2: Study Plan
+    first_pass_months: 12,
+    second_pass_months: 4,
+    dedicated_months: 2,
+
+    // Step 3: Current Progress
+    uworld_exam: '',
+
+    // Step 4: UWorld Progress (populated dynamically)
+    uworld_progress: {},
+
+    // Step 5: English Level
+    english_level: '',
+    english_details: '',
+
+    // Step 6: Anki
+    uses_anki: '',
+    anki_details: '',
+
+    // Step 7-9: Research Experience
+    has_research_experience: '',
+    research_interest: '',
+    research_projects: [],
+
+    // Step 10: Observerships
+    observerships: [],
+
+    // Step 11: Background
+    background: ''
+};
 
 // Initialize questionnaire
-async function initQuestionnaire() {
-    // Load saved progress
-    await loadProgress();
+document.addEventListener('DOMContentLoaded', async () => {
+    // Protect route - require authentication
+    const user = requireAuth();
+    if (!user) return;
+
+    // Load saved data from database
+    await loadSavedData(user.id);
 
     // Setup event listeners
     setupEventListeners();
+    setupConditionalFields();
+    setupSliders();
+    setupUWorldTracking();
 
-    // Populate UWorld systems list (Page 3)
-    populateUWorldSystems();
+    // Render current step
+    renderStep(currentStep);
+});
+
+// Load saved questionnaire data from Supabase
+async function loadSavedData(userId) {
+    const sb = initSupabase();
+
+    try {
+        const { data, error } = await sb
+            .from('users')
+            .select('questionnaire_data, questionnaire_step')
+            .eq('id', userId)
+            .single();
+
+        if (error) throw error;
+
+        if (data.questionnaire_data) {
+            userData = { ...userData, ...data.questionnaire_data };
+            currentStep = data.questionnaire_step || 1;
+        }
+    } catch (error) {
+        console.error('Error loading saved data:', error);
+    }
+}
+
+// Save data to Supabase with debouncing
+let saveTimeout;
+async function saveData(skipDelay = false) {
+    clearTimeout(saveTimeout);
+
+    const saveFunction = async () => {
+        const user = getCurrentUser();
+        if (!user) return;
+
+        const sb = initSupabase();
+
+        try {
+            const { error } = await sb
+                .from('users')
+                .update({
+                    questionnaire_data: userData,
+                    questionnaire_step: currentStep,
+                    updated_at: new Date().toISOString()
+                })
+                .eq('id', user.id);
+
+            if (error) throw error;
+
+            // Show save indicator
+            showSaveIndicator();
+        } catch (error) {
+            console.error('Error saving data:', error);
+            showError('Erro ao salvar dados. Tente novamente.');
+        }
+    };
+
+    if (skipDelay) {
+        await saveFunction();
+    } else {
+        saveTimeout = setTimeout(saveFunction, 2000);
+    }
+}
+
+// Setup event listeners
+function setupEventListeners() {
+    // Next button
+    document.getElementById('nextBtn')?.addEventListener('click', nextStep);
+
+    // Back button
+    document.getElementById('backBtn')?.addEventListener('click', previousStep);
+
+    // Continue later button
+    document.getElementById('saveLaterBtn')?.addEventListener('click', saveLater);
+
+    // Auto-save on input change
+    document.addEventListener('input', (e) => {
+        if (e.target.matches('input, select, textarea')) {
+            captureStepData();
+            saveData();
+        }
+    });
+
+    // Add contact button (Step 10)
+    document.getElementById('addContactBtn')?.addEventListener('click', addObservershipContact);
+}
+
+// Setup conditional field visibility
+function setupConditionalFields() {
+    // English level details
+    document.querySelectorAll('input[name="english_level"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const detailsField = document.getElementById('englishDetailsGroup');
+            if (detailsField) {
+                detailsField.style.display = e.target.value === 'basic' ? 'block' : 'none';
+            }
+        });
+    });
+
+    // Anki usage details
+    document.querySelectorAll('input[name="uses_anki"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const detailsField = document.getElementById('ankiDetailsGroup');
+            if (detailsField) {
+                detailsField.style.display = e.target.value === 'yes' ? 'block' : 'none';
+            }
+        });
+    });
+
+    // Research experience details
+    document.querySelectorAll('input[name="has_research_experience"]').forEach(radio => {
+        radio.addEventListener('change', (e) => {
+            const detailsField = document.getElementById('researchDetailsGroup');
+            if (detailsField) {
+                detailsField.style.display = e.target.value === 'yes' ? 'block' : 'none';
+            }
+        });
+    });
+}
+
+// Setup range sliders with value display
+function setupSliders() {
+    const sliders = document.querySelectorAll('.slider-group input[type="range"]');
+    sliders.forEach(slider => {
+        slider.addEventListener('input', (e) => {
+            const valueDisplay = e.target.nextElementSibling;
+            if (valueDisplay && valueDisplay.classList.contains('slider-value')) {
+                valueDisplay.textContent = `${e.target.value} meses`;
+            }
+        });
+    });
+}
+
+// Setup UWorld tracking system
+function setupUWorldTracking() {
+    const examSelect = document.getElementById('uworld_exam');
+    if (!examSelect) return;
+
+    examSelect.addEventListener('change', (e) => {
+        userData.uworld_exam = e.target.value;
+        renderUWorldSystems(e.target.value);
+        saveData();
+    });
+}
+
+// Render UWorld systems based on selected exam
+function renderUWorldSystems(exam) {
+    const container = document.getElementById('uworldSystemsContainer');
+    if (!container || !exam) return;
+
+    container.innerHTML = '';
+
+    const examData = UWORLD_DATA[exam];
+    if (!examData) return;
+
+    examData.systems.forEach((system, systemIndex) => {
+        const systemDiv = document.createElement('div');
+        systemDiv.className = 'uworld-system';
+
+        const systemHeader = document.createElement('div');
+        systemHeader.className = 'uworld-system-header';
+        systemHeader.innerHTML = `
+            <h4>${system.name}</h4>
+            <span class="toggle-icon">▼</span>
+        `;
+
+        systemHeader.addEventListener('click', () => {
+            systemDiv.classList.toggle('collapsed');
+            const icon = systemHeader.querySelector('.toggle-icon');
+            icon.textContent = systemDiv.classList.contains('collapsed') ? '▶' : '▼';
+        });
+
+        const categoriesDiv = document.createElement('div');
+        categoriesDiv.className = 'uworld-categories';
+
+        if (system.categories.length === 0) {
+            // No categories - just track system
+            categoriesDiv.innerHTML = `
+                <div class="category-item">
+                    <label>
+                        <input type="checkbox"
+                               data-system="${system.name}"
+                               onchange="updateUWorldProgress(this)">
+                        <span>Completado</span>
+                    </label>
+                    <select class="difficulty-select"
+                            data-system="${system.name}"
+                            onchange="updateUWorldProgress(this)">
+                        <option value="">Dificuldade</option>
+                        <option value="easy">Fácil</option>
+                        <option value="medium">Médio</option>
+                        <option value="hard">Difícil</option>
+                    </select>
+                </div>
+            `;
+        } else {
+            system.categories.forEach(category => {
+                const categoryDiv = document.createElement('div');
+                categoryDiv.className = 'category-item';
+                categoryDiv.innerHTML = `
+                    <label>
+                        <input type="checkbox"
+                               data-system="${system.name}"
+                               data-category="${category}"
+                               onchange="updateUWorldProgress(this)">
+                        <span>${category}</span>
+                    </label>
+                    <select class="difficulty-select"
+                            data-system="${system.name}"
+                            data-category="${category}"
+                            onchange="updateUWorldProgress(this)">
+                        <option value="">Dificuldade</option>
+                        <option value="easy">Fácil</option>
+                        <option value="medium">Médio</option>
+                        <option value="hard">Difícil</option>
+                    </select>
+                `;
+                categoriesDiv.appendChild(categoryDiv);
+            });
+        }
+
+        systemDiv.appendChild(systemHeader);
+        systemDiv.appendChild(categoriesDiv);
+        container.appendChild(systemDiv);
+    });
+
+    // Load saved progress
+    loadUWorldProgress();
+}
+
+// Update UWorld progress in userData
+window.updateUWorldProgress = function(element) {
+    const system = element.dataset.system;
+    const category = element.dataset.category || 'general';
+
+    if (!userData.uworld_progress[system]) {
+        userData.uworld_progress[system] = {};
+    }
+
+    if (element.type === 'checkbox') {
+        userData.uworld_progress[system][category] = {
+            ...userData.uworld_progress[system][category],
+            completed: element.checked
+        };
+    } else if (element.tagName === 'SELECT') {
+        userData.uworld_progress[system][category] = {
+            ...userData.uworld_progress[system][category],
+            difficulty: element.value
+        };
+    }
+
+    saveData();
+};
+
+// Load saved UWorld progress
+function loadUWorldProgress() {
+    if (!userData.uworld_progress) return;
+
+    Object.keys(userData.uworld_progress).forEach(system => {
+        Object.keys(userData.uworld_progress[system]).forEach(category => {
+            const progress = userData.uworld_progress[system][category];
+
+            // Find and check the checkbox
+            const checkbox = document.querySelector(
+                `input[type="checkbox"][data-system="${system}"][data-category="${category}"]`
+            ) || document.querySelector(
+                `input[type="checkbox"][data-system="${system}"]:not([data-category])`
+            );
+
+            if (checkbox && progress.completed) {
+                checkbox.checked = true;
+            }
+
+            // Set the difficulty
+            const select = document.querySelector(
+                `select[data-system="${system}"][data-category="${category}"]`
+            ) || document.querySelector(
+                `select[data-system="${system}"]:not([data-category])`
+            );
+
+            if (select && progress.difficulty) {
+                select.value = progress.difficulty;
+            }
+        });
+    });
+}
+
+// Add observership contact
+function addObservershipContact() {
+    const nameInput = document.getElementById('contact_name');
+    const emailInput = document.getElementById('contact_email');
+
+    const name = nameInput.value.trim();
+    const email = emailInput.value.trim();
+
+    if (!name || !email) {
+        showError('Preencha o nome e email do contato');
+        return;
+    }
+
+    userData.observerships.push({ name, email });
+
+    // Add to list display
+    const list = document.getElementById('contactsList');
+    const contactDiv = document.createElement('div');
+    contactDiv.className = 'contact-item';
+    contactDiv.innerHTML = `
+        <span>${name} (${email})</span>
+        <button type="button" class="btn-remove" onclick="removeContact(${userData.observerships.length - 1})">
+            Remover
+        </button>
+    `;
+    list.appendChild(contactDiv);
+
+    // Clear inputs
+    nameInput.value = '';
+    emailInput.value = '';
+
+    saveData();
+}
+
+// Remove observership contact
+window.removeContact = function(index) {
+    userData.observerships.splice(index, 1);
+
+    // Re-render list
+    const list = document.getElementById('contactsList');
+    list.innerHTML = '';
+    userData.observerships.forEach((contact, i) => {
+        const contactDiv = document.createElement('div');
+        contactDiv.className = 'contact-item';
+        contactDiv.innerHTML = `
+            <span>${contact.name} (${contact.email})</span>
+            <button type="button" class="btn-remove" onclick="removeContact(${i})">Remover</button>
+        `;
+        list.appendChild(contactDiv);
+    });
+
+    saveData();
+};
+
+// Capture data from current step
+function captureStepData() {
+    const step = currentStep;
+
+    // Step 1: Basic Info
+    if (step === 1) {
+        userData.exam_taking = document.querySelector('input[name="exam_taking"]:checked')?.value || '';
+        userData.study_start_date = document.getElementById('study_start_date')?.value || '';
+        userData.test_date = document.getElementById('test_date')?.value || '';
+    }
+
+    // Step 2: Study Plan
+    if (step === 2) {
+        userData.first_pass_months = parseInt(document.getElementById('first_pass_months')?.value) || 12;
+        userData.second_pass_months = parseInt(document.getElementById('second_pass_months')?.value) || 4;
+        userData.dedicated_months = parseInt(document.getElementById('dedicated_months')?.value) || 2;
+    }
+
+    // Step 3: UWorld exam selection (captured in setupUWorldTracking)
+
+    // Step 4: UWorld progress (captured in updateUWorldProgress)
+
+    // Step 5: English Level
+    if (step === 5) {
+        userData.english_level = document.querySelector('input[name="english_level"]:checked')?.value || '';
+        userData.english_details = document.getElementById('english_details')?.value || '';
+    }
+
+    // Step 6: Anki
+    if (step === 6) {
+        userData.uses_anki = document.querySelector('input[name="uses_anki"]:checked')?.value || '';
+        userData.anki_details = document.getElementById('anki_details')?.value || '';
+    }
+
+    // Step 7: Research Experience
+    if (step === 7) {
+        userData.has_research_experience = document.querySelector('input[name="has_research_experience"]:checked')?.value || '';
+    }
+
+    // Step 8: Research Interest
+    if (step === 8) {
+        userData.research_interest = document.getElementById('research_interest')?.value || '';
+    }
+
+    // Step 9: Research Projects (handled separately)
+
+    // Step 10: Observerships (handled in addObservershipContact)
+
+    // Step 11: Background
+    if (step === 11) {
+        userData.background = document.getElementById('background')?.value || '';
+    }
+}
+
+// Navigate to next step
+async function nextStep() {
+    captureStepData();
+
+    // Validate current step
+    if (!validateStep(currentStep)) {
+        return;
+    }
+
+    if (currentStep < totalSteps) {
+        currentStep++;
+        await saveData(true); // Save immediately
+        renderStep(currentStep);
+    } else {
+        // Finish questionnaire
+        await finishQuestionnaire();
+    }
+}
+
+// Navigate to previous step
+function previousStep() {
+    captureStepData();
+
+    if (currentStep > 1) {
+        currentStep--;
+        renderStep(currentStep);
+    }
+}
+
+// Save and continue later
+async function saveLater() {
+    captureStepData();
+    await saveData(true);
+
+    const user = getCurrentUser();
+    if (user) {
+        redirectToDashboard(user);
+    }
+}
+
+// Validate step before proceeding
+function validateStep(step) {
+    let isValid = true;
+    let errorMessage = '';
+
+    switch (step) {
+        case 1:
+            if (!userData.exam_taking) {
+                errorMessage = 'Selecione qual prova você está fazendo';
+                isValid = false;
+            }
+            break;
+        case 2:
+            // All sliders have default values, no validation needed
+            break;
+        case 3:
+            if (!userData.uworld_exam) {
+                errorMessage = 'Selecione qual UWorld você está usando';
+                isValid = false;
+            }
+            break;
+        // Other steps are optional or have conditional validation
+    }
+
+    if (!isValid) {
+        showError(errorMessage);
+    }
+
+    return isValid;
+}
+
+// Render specific step
+function renderStep(step) {
+    // Hide all steps
+    document.querySelectorAll('.step-content').forEach(s => {
+        s.style.display = 'none';
+    });
+
+    // Show current step
+    const stepElement = document.getElementById(`step${step}`);
+    if (stepElement) {
+        stepElement.style.display = 'block';
+    }
 
     // Update progress bar
     updateProgressBar();
 
-    // Show current page
-    showPage(currentPage);
-}
-
-// Setup all event listeners
-function setupEventListeners() {
-    // Navigation buttons
-    document.getElementById('prevBtn').addEventListener('click', previousPage);
-    document.getElementById('nextBtn').addEventListener('click', nextPage);
-    document.getElementById('finishBtn').addEventListener('click', finishQuestionnaire);
-    document.getElementById('saveLaterBtn').addEventListener('click', saveLater);
-
-    // Page 2: USMLE sliders
-    setupSliders();
-
-    // Page 2: Visa conditional
-    document.querySelectorAll('input[name="hasVisa"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            document.getElementById('visaTypeGroup').classList.toggle('hidden', e.target.value !== 'yes');
-        });
-    });
-
-    // Page 2: Current stage conditional
-    document.getElementById('currentStage').addEventListener('change', (e) => {
-        document.getElementById('otherStageGroup').classList.toggle('hidden', e.target.value !== 'other');
-    });
-
-    // Page 3: UWorld conditionals
-    setupUWorldConditionals();
-
-    // Page 4: English conditionals
-    setupEnglishConditionals();
-
-    // Page 5: Anki conditionals
-    setupAnkiConditionals();
-
-    // Page 6: Research conditionals
-    setupResearchConditionals();
-
-    // Page 7: Rotations
-    setupRotationsHandlers();
-
-    // Page 8: Background conditionals
-    setupBackgroundConditionals();
-}
-
-// Setup sliders for Page 2
-function setupSliders() {
-    const sliders = [
-        { id: 'firstPassSlider', valueId: 'firstPassValue', suffix: ' meses' },
-        { id: 'secondPassSlider', valueId: 'secondPassValue', suffix: ' meses' },
-        { id: 'dedicatedSlider', valueId: 'dedicatedValue', suffix: ' mês' }
-    ];
-
-    sliders.forEach(slider => {
-        const element = document.getElementById(slider.id);
-        const valueDisplay = document.getElementById(slider.valueId);
-
-        element.addEventListener('input', (e) => {
-            const value = parseInt(e.target.value);
-            valueDisplay.textContent = value;
-            // Update suffix for singular/plural
-            if (slider.suffix.includes('mês')) {
-                valueDisplay.nextSibling.textContent = value === 1 ? ' mês' : ' meses';
-            }
-        });
-    });
-}
-
-// Setup UWorld conditional displays
-function setupUWorldConditionals() {
-    document.querySelectorAll('input[name="uworldPurchased"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            document.getElementById('uworldDetailsSection').classList.toggle('hidden', e.target.value !== 'yes');
-        });
-    });
-
-    document.querySelectorAll('input[name="uworldActivated"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            const activated = e.target.value === 'yes';
-            document.getElementById('uworldActivatedSection').classList.toggle('hidden', !activated);
-            document.getElementById('uworldNotActivatedSection').classList.toggle('hidden', activated);
-        });
-    });
-}
-
-// Setup English conditional displays (Page 4)
-function setupEnglishConditionals() {
-    document.querySelectorAll('input[name="oetTaken"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            document.getElementById('oetScoresGroup').classList.toggle('hidden', e.target.value !== 'yes');
-        });
-    });
-
-    document.querySelectorAll('input[name="takingClasses"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            document.getElementById('englishSchoolGroup').classList.toggle('hidden', e.target.value !== 'yes');
-        });
-    });
-}
-
-// Setup Anki conditional displays
-function setupAnkiConditionals() {
-    document.querySelectorAll('input[name="ankiDownloaded"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            document.getElementById('ankiDetailsGroup').classList.toggle('hidden', e.target.value !== 'yes');
-        });
-    });
-
-    document.querySelectorAll('input[name="ankiUsed"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            const isUsed = e.target.value === 'yes';
-            // Show all the detailed Anki questions if they've used it
-            if (isUsed) {
-                document.getElementById('ankiDetailsGroup')?.classList.remove('hidden');
-            }
-        });
-    });
-}
-
-// Setup Research conditional displays
-function setupResearchConditionals() {
-    // Systematic review participation conditional
-    document.querySelectorAll('input[name="systematicReview"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            const value = e.target.value;
-            // Show details group if "outro" is selected
-            const showDetails = value === 'outro';
-            // Show status group if any option except "no" is selected
-            const showStatus = value !== 'no';
-
-            document.getElementById('sysRevDetailsGroup')?.classList.toggle('hidden', !showDetails);
-            document.getElementById('sysRevStatusGroup')?.classList.toggle('hidden', !showStatus);
-        });
-    });
-
-    // Contacts conditional
-    document.querySelectorAll('input[name="hasContacts"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            document.getElementById('contactsSection').classList.toggle('hidden', e.target.value !== 'yes');
-        });
-    });
-
-    // Add contact button
-    document.getElementById('addContactBtn')?.addEventListener('click', addContactField);
-}
-
-// Setup Rotations handlers
-function setupRotationsHandlers() {
-    // Clerkship conditional
-    document.querySelectorAll('input[name="didClerkship"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            document.getElementById('clerkshipDetailsGroup')?.classList.toggle('hidden', e.target.value !== 'yes');
-        });
-    });
-
-    // Observership conditional
-    document.querySelectorAll('input[name="hasObservership"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            document.getElementById('observershipDetailsGroup')?.classList.toggle('hidden', e.target.value !== 'yes');
-        });
-    });
-
-    // Future observerships conditional
-    document.querySelectorAll('input[name="plansFutureObs"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            document.getElementById('futureObsGroup')?.classList.toggle('hidden', e.target.value !== 'yes');
-        });
-    });
-
-    // Add observership button
-    document.getElementById('addObservershipBtn')?.addEventListener('click', addObservershipField);
-}
-
-// Setup Background conditional displays (Page 8)
-function setupBackgroundConditionals() {
-    // Current location conditional - shows different question sets
-    document.querySelectorAll('input[name="currentLocation"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            const location = e.target.value;
-
-            // Show "other country" field if needed
-            document.getElementById('locationOtherGroup')?.classList.toggle('hidden', location !== 'outro');
-
-            // Show Brasil/Other questions or USA questions based on location
-            const showBrazilOther = (location === 'brasil' || location === 'outro');
-            const showUSA = (location === 'eua');
-
-            document.getElementById('brazilOtherQuestions')?.classList.toggle('hidden', !showBrazilOther);
-            document.getElementById('usaQuestions')?.classList.toggle('hidden', !showUSA);
-        });
-    });
-
-    // Works in USA conditional (within USA questions)
-    document.querySelectorAll('input[name="worksUSA"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            document.getElementById('howGotJobGroup')?.classList.toggle('hidden', e.target.value !== 'yes');
-        });
-    });
-
-    // Has children conditional
-    document.querySelectorAll('input[name="hasChildren"]').forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            document.getElementById('childrenCountGroup')?.classList.toggle('hidden', e.target.value !== 'yes');
-        });
-    });
-}
-
-// Add contact field (Page 6)
-function addContactField() {
-    const container = document.getElementById('contactsList');
-    const index = container.children.length;
-
-    const contactDiv = document.createElement('div');
-    contactDiv.className = 'contact-field';
-    contactDiv.innerHTML = `
-        <div class="form-row">
-            <input type="text" placeholder="Nome" class="contact-name">
-            <input type="text" placeholder="Especialidade" class="contact-specialty">
-            <input type="text" placeholder="Instituição" class="contact-institution">
-            <button type="button" class="btn btn-sm btn-danger remove-contact">Remover</button>
-        </div>
-    `;
-
-    container.appendChild(contactDiv);
-
-    contactDiv.querySelector('.remove-contact').addEventListener('click', () => {
-        container.removeChild(contactDiv);
-    });
-}
-
-// Add observership field (Page 7)
-function addObservershipField(isPlanned) {
-    const container = isPlanned
-        ? document.getElementById('plannedObservershipsList')
-        : document.getElementById('observershipsList');
-
-    const obsDiv = document.createElement('div');
-    obsDiv.className = 'observership-field';
-    obsDiv.innerHTML = `
-        <div class="observership-card">
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Instituição</label>
-                    <input type="text" class="obs-institution">
-                </div>
-                <div class="form-group">
-                    <label>${isPlanned ? 'Quando planeja' : 'Ano que fez'}</label>
-                    <input type="${isPlanned ? 'month' : 'number'}" class="obs-year" ${!isPlanned ? 'min="2000" max="2030"' : ''}>
-                </div>
-            </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label>Especialidade</label>
-                    <input type="text" class="obs-specialty">
-                </div>
-                <div class="form-group">
-                    <label>Setting</label>
-                    <select class="obs-setting">
-                        <option value="">Selecione...</option>
-                        <option value="private_practice">Clínica Privada</option>
-                        <option value="hospital">Hospital</option>
-                    </select>
-                </div>
-            </div>
-            ${!isPlanned ? `
-                <div class="form-row">
-                    <div class="form-group">
-                        <label>Custo aproximado (USD)</label>
-                        <input type="number" class="obs-cost" min="0">
-                    </div>
-                    <div class="form-group">
-                        <label>Conseguiu carta de recomendação?</label>
-                        <select class="obs-lor">
-                            <option value="">Selecione...</option>
-                            <option value="yes">Sim</option>
-                            <option value="no">Não</option>
-                        </select>
-                    </div>
-                </div>
-                <div class="form-group">
-                    <label>Comentários</label>
-                    <textarea class="obs-comments" rows="2"></textarea>
-                </div>
-            ` : ''}
-            <button type="button" class="btn btn-sm btn-danger remove-observership">Remover</button>
-        </div>
-    `;
-
-    container.appendChild(obsDiv);
-
-    obsDiv.querySelector('.remove-observership').addEventListener('click', () => {
-        container.removeChild(obsDiv);
-    });
-}
-
-// Populate UWorld systems (Page 3)
-function populateUWorldSystems() {
-    if (!UWORLD_DATA || !UWORLD_DATA.step1) return;
-
-    const container = document.getElementById('uworldSystemsList');
-
-    UWORLD_DATA.step1.systems.forEach((system, sysIndex) => {
-        const systemDiv = document.createElement('div');
-        systemDiv.className = 'system-item';
-
-        const systemHeader = document.createElement('div');
-        systemHeader.className = 'system-header';
-        systemHeader.innerHTML = `
-            <input type="checkbox" class="system-checkbox" data-system="${sysIndex}">
-            <span class="system-name">${system.name}</span>
-            <button type="button" class="toggle-categories">▼</button>
-        `;
-
-        const categoriesList = document.createElement('div');
-        categoriesList.className = 'categories-list hidden';
-
-        system.categories.forEach((category, catIndex) => {
-            const categoryDiv = document.createElement('div');
-            categoryDiv.className = 'category-item';
-            categoryDiv.innerHTML = `
-                <input type="checkbox" class="category-checkbox" data-system="${sysIndex}" data-category="${catIndex}">
-                <span class="category-name">${category}</span>
-                <button type="button" class="difficulty-btn" data-system="${sysIndex}" data-category="${catIndex}">🆘</button>
-                <input type="text" class="difficulty-notes hidden" placeholder="O que achou difícil?">
-            `;
-            categoriesList.appendChild(categoryDiv);
-        });
-
-        systemDiv.appendChild(systemHeader);
-        systemDiv.appendChild(categoriesList);
-        container.appendChild(systemDiv);
-
-        // Toggle categories
-        systemHeader.querySelector('.toggle-categories').addEventListener('click', function() {
-            categoriesList.classList.toggle('hidden');
-            this.textContent = categoriesList.classList.contains('hidden') ? '▼' : '▲';
-        });
-
-        // System checkbox (select all categories)
-        systemHeader.querySelector('.system-checkbox').addEventListener('change', function() {
-            categoriesList.querySelectorAll('.category-checkbox').forEach(cb => {
-                cb.checked = this.checked;
-            });
-        });
-
-        // Difficulty button
-        categoriesList.querySelectorAll('.difficulty-btn').forEach(btn => {
-            btn.addEventListener('click', function() {
-                this.classList.toggle('active');
-                const notesInput = this.nextElementSibling;
-                notesInput.classList.toggle('hidden');
-            });
-        });
-    });
-}
-
-// Navigation functions
-function previousPage() {
-    if (currentPage > 1) {
-        saveCurrentPage();
-        currentPage--;
-        showPage(currentPage);
-        updateProgressBar();
-    }
-}
-
-async function nextPage() {
-    if (validateCurrentPage()) {
-        await saveCurrentPage();
-        currentPage++;
-        showPage(currentPage);
-        updateProgressBar();
-    }
-}
-
-async function saveLater() {
-    await saveCurrentPage();
-    await updateProgress(currentPage, false);
-    alert('Progresso salvo! Você pode continuar depois.');
-    window.location.href = 'dashboard.html';
-}
-
-async function finishQuestionnaire() {
-    if (!validateCurrentPage()) return;
-
-    await saveCurrentPage();
-    await updateProgress(totalPages, true);
-
-    // Create default landmarks
-    await createDefaultLandmarks();
-
-    alert('Questionário concluído! Bem-vindo à Ward Academy! 🎉');
-    window.location.href = 'dashboard.html';
-}
-
-// Validate current page
-function validateCurrentPage() {
-    const page = document.getElementById(`page${currentPage}`);
-    const requiredFields = page.querySelectorAll('[required]');
-
-    for (let field of requiredFields) {
-        if (!field.value || (field.type === 'radio' && !page.querySelector(`input[name="${field.name}"]:checked`))) {
-            alert('Por favor, preencha todos os campos obrigatórios.');
-            field.focus();
-            return false;
-        }
-    }
-
-    return true;
-}
-
-// Show specific page
-function showPage(pageNum) {
-    // Hide all pages
-    document.querySelectorAll('.questionnaire-page').forEach(page => {
-        page.classList.remove('active');
-    });
-
-    // Show current page
-    document.getElementById(`page${pageNum}`).classList.add('active');
-
-    // Update page number display
-    document.getElementById('currentPageNum').textContent = pageNum;
-
-    // Update buttons
-    document.getElementById('prevBtn').style.display = pageNum === 1 ? 'none' : 'inline-block';
-    document.getElementById('nextBtn').style.display = pageNum === totalPages ? 'none' : 'inline-block';
-    document.getElementById('finishBtn').style.display = pageNum === totalPages ? 'inline-block' : 'none';
+    // Update button states
+    updateButtons();
 
     // Scroll to top
     window.scrollTo(0, 0);
+
+    // Populate fields with saved data
+    populateFields(step);
+}
+
+// Populate fields with saved data
+function populateFields(step) {
+    switch (step) {
+        case 1:
+            if (userData.exam_taking) {
+                const radio = document.querySelector(`input[name="exam_taking"][value="${userData.exam_taking}"]`);
+                if (radio) radio.checked = true;
+            }
+            if (userData.study_start_date) {
+                const input = document.getElementById('study_start_date');
+                if (input) input.value = userData.study_start_date;
+            }
+            if (userData.test_date) {
+                const input = document.getElementById('test_date');
+                if (input) input.value = userData.test_date;
+            }
+            break;
+
+        case 2:
+            document.getElementById('first_pass_months').value = userData.first_pass_months;
+            document.getElementById('second_pass_months').value = userData.second_pass_months;
+            document.getElementById('dedicated_months').value = userData.dedicated_months;
+            // Trigger slider display update
+            setupSliders();
+            break;
+
+        case 3:
+            if (userData.uworld_exam) {
+                const select = document.getElementById('uworld_exam');
+                if (select) {
+                    select.value = userData.uworld_exam;
+                }
+            }
+            break;
+
+        case 4:
+            if (userData.uworld_exam) {
+                renderUWorldSystems(userData.uworld_exam);
+            }
+            break;
+
+        case 5:
+            if (userData.english_level) {
+                const radio = document.querySelector(`input[name="english_level"][value="${userData.english_level}"]`);
+                if (radio) {
+                    radio.checked = true;
+                    // Show/hide details
+                    const detailsField = document.getElementById('englishDetailsGroup');
+                    if (detailsField) {
+                        detailsField.style.display = userData.english_level === 'basic' ? 'block' : 'none';
+                    }
+                }
+            }
+            if (userData.english_details) {
+                const textarea = document.getElementById('english_details');
+                if (textarea) textarea.value = userData.english_details;
+            }
+            break;
+
+        case 6:
+            if (userData.uses_anki) {
+                const radio = document.querySelector(`input[name="uses_anki"][value="${userData.uses_anki}"]`);
+                if (radio) {
+                    radio.checked = true;
+                    // Show/hide details
+                    const detailsField = document.getElementById('ankiDetailsGroup');
+                    if (detailsField) {
+                        detailsField.style.display = userData.uses_anki === 'yes' ? 'block' : 'none';
+                    }
+                }
+            }
+            if (userData.anki_details) {
+                const textarea = document.getElementById('anki_details');
+                if (textarea) textarea.value = userData.anki_details;
+            }
+            break;
+
+        case 7:
+            if (userData.has_research_experience) {
+                const radio = document.querySelector(`input[name="has_research_experience"][value="${userData.has_research_experience}"]`);
+                if (radio) radio.checked = true;
+            }
+            break;
+
+        case 8:
+            if (userData.research_interest) {
+                const textarea = document.getElementById('research_interest');
+                if (textarea) textarea.value = userData.research_interest;
+            }
+            break;
+
+        case 10:
+            // Render observerships list
+            const list = document.getElementById('contactsList');
+            if (list) {
+                list.innerHTML = '';
+                userData.observerships.forEach((contact, i) => {
+                    const contactDiv = document.createElement('div');
+                    contactDiv.className = 'contact-item';
+                    contactDiv.innerHTML = `
+                        <span>${contact.name} (${contact.email})</span>
+                        <button type="button" class="btn-remove" onclick="removeContact(${i})">Remover</button>
+                    `;
+                    list.appendChild(contactDiv);
+                });
+            }
+            break;
+
+        case 11:
+            if (userData.background) {
+                const textarea = document.getElementById('background');
+                if (textarea) textarea.value = userData.background;
+            }
+            break;
+    }
 }
 
 // Update progress bar
 function updateProgressBar() {
-    const percent = (currentPage / totalPages) * 100;
-    document.getElementById('progressBar').style.width = percent + '%';
-}
+    const percentage = Math.round((currentStep / totalSteps) * 100);
+    const progressFill = document.querySelector('.progress-fill');
+    const progressText = document.querySelector('.progress-text');
 
-// Save current page data
-async function saveCurrentPage() {
-    const pageData = {};
-    const page = document.getElementById(`page${currentPage}`);
+    if (progressFill) {
+        progressFill.style.width = `${percentage}%`;
+    }
 
-    // Collect all form data from current page
-    page.querySelectorAll('input, select, textarea').forEach(field => {
-        if (field.type === 'radio') {
-            if (field.checked) pageData[field.name] = field.value;
-        } else if (field.type === 'checkbox') {
-            if (field.name) {
-                if (!pageData[field.name]) pageData[field.name] = [];
-                if (field.checked) pageData[field.name].push(field.value);
-            }
-        } else if (field.id) {
-            pageData[field.id] = field.value;
-        }
-    });
-
-    // Save to appropriate table based on page
-    try {
-        await savePageData(currentPage, pageData);
-    } catch (error) {
-        console.error('Error saving page data:', error);
+    if (progressText) {
+        progressText.textContent = `Passo ${currentStep} de ${totalSteps}`;
     }
 }
 
-// Save page data to Supabase
-async function savePageData(pageNum, data) {
+// Update button states
+function updateButtons() {
+    const backBtn = document.getElementById('backBtn');
+    const nextBtn = document.getElementById('nextBtn');
+
+    if (backBtn) {
+        backBtn.style.display = currentStep === 1 ? 'none' : 'inline-block';
+    }
+
+    if (nextBtn) {
+        nextBtn.textContent = currentStep === totalSteps ? 'FINALIZAR' : 'PRÓXIMO';
+    }
+}
+
+// Finish questionnaire
+async function finishQuestionnaire() {
+    const user = getCurrentUser();
+    if (!user) return;
+
     const sb = initSupabase();
 
-    switch(pageNum) {
-        case 1: // Personal info
-            await sb.from('user_profiles').upsert({
-                user_id: currentUser.id,
-                full_name: data.fullName,
-                email_confirmed: data.email,
-                cpf: data.cpf,
-                orcid: data.orcid,
-                address_line1: data.addressLine1,
-                address_line2: data.addressLine2,
-                city: data.city,
-                state_province: data.stateProvince,
-                postal_code: data.postalCode,
-                country: data.country,
-                medical_school: data.medicalSchool,
-                medical_graduation_date: data.graduationDate,
-                current_institution: data.currentInstitution,
-                current_specialty: data.currentSpecialty,
-                desired_us_specialty: data.desiredSpecialty,
-                updated_at: new Date().toISOString()
-            });
-            break;
-
-        case 2: // USMLE info
-            await sb.from('usmle_info').upsert({
-                user_id: currentUser.id,
-                pathway: data.pathway,
-                has_us_visa: data.hasVisa === 'yes',
-                visa_type: data.visaType,
-                current_stage: data.currentStage,
-                current_stage_other: data.otherStage,
-                next_exam_date: data.nextExamDate,
-                first_pass_months: parseInt(data.firstPassSlider) || 6,
-                second_pass_months: parseInt(data.secondPassSlider) || 2,
-                dedicated_months: parseInt(data.dedicatedSlider) || 1,
-                updated_at: new Date().toISOString()
-            });
-            break;
-
-        case 3: // UWorld info
-            await sb.from('uworld_info').upsert({
-                user_id: currentUser.id,
-                purchased: data.uworldPurchased === 'yes',
-                activated: data.uworldActivated === 'yes',
-                expiration_date: data.expirationDate,
-                subscription_length: data.subscriptionLength,
-                total_questions_done: parseInt(data.totalQuestions) || 0,
-                overall_percentage: parseFloat(data.overallPercentage) || 0,
-                lowest_percentage: parseFloat(data.lowestPercentage) || 0,
-                lowest_percentage_system: data.lowestSystem,
-                highest_percentage: parseFloat(data.highestPercentage) || 0,
-                highest_percentage_system: data.highestSystem,
-                updated_at: new Date().toISOString()
-            });
-            // Save completed systems/categories separately
-            // (would need more complex logic here)
-            break;
-
-        case 4: // English
-            await sb.from('english_proficiency').upsert({
-                user_id: currentUser.id,
-                // OET scores
-                oet_taken: data.oetTaken === 'yes',
-                oet_listening: parseFloat(data.oetListening) || null,
-                oet_reading: parseFloat(data.oetReading) || null,
-                oet_writing: parseFloat(data.oetWriting) || null,
-                oet_speaking: parseFloat(data.oetSpeaking) || null,
-                // English classes
-                taking_classes: data.takingClasses === 'yes',
-                english_school_name: data.englishSchool || null,
-                // Reading comprehension
-                understands_uworld: data.understandsUworld === 'yes',
-                frequent_word_lookup: data.frequentWordLookup === 'yes',
-                needs_translation: data.needsTranslation === 'yes',
-                // Listening comprehension
-                understands_lectures: data.understandsLectures === 'yes',
-                listening_difficulty: data.listeningDifficulty === 'yes',
-                updated_at: new Date().toISOString()
-            });
-            break;
-
-        case 5: // Anki
-            // Collect devices from checkboxes
-            const devices = [];
-            document.querySelectorAll('input[name="devices"]:checked').forEach(cb => {
-                devices.push(cb.value);
-            });
-
-            await sb.from('anki_info').upsert({
-                user_id: currentUser.id,
-                downloaded: data.ankiDownloaded === 'yes',
-                used: data.ankiUsed === 'yes',
-                uses_anking: data.usesAnking === 'yes',
-                usage_frequency: data.ankiUsageFreq || null,
-                creates_own_cards: data.createsOwnCards || null,
-                devices_used: devices,
-                primary_device: data.primaryDevice || null,
-                average_cards_per_day: parseInt(data.avgCardsPerDay) || 0,
-                using_since: data.usingSince || null,
-                updated_at: new Date().toISOString()
-            });
-            break;
-
-        case 6: // Research
-            await sb.from('research_experience').upsert({
-                user_id: currentUser.id,
-                // Confirmation data
-                orcid_id: data.confirmOrcid || data.researchOrcid,
-                research_email: data.confirmEmail,
-                full_name: data.confirmName,
-                research_institution: data.confirmInstitution,
-                research_specialty: data.confirmSpecialty,
-                research_department: data.confirmDepartment,
-                // Experience level
-                experience_level: data.researchExpLevel,
-                // Systematic review
-                participated_systematic_review: data.systematicReview !== 'no',
-                systematic_review_role: data.systematicReview,
-                systematic_review_details: data.sysRevDetails || null,
-                systematic_review_status: data.sysRevStatus || null,
-                // Research areas and institutions
-                research_area_1: data.researchArea1 || null,
-                research_area_2: data.researchArea2 || null,
-                research_area_3: data.researchArea3 || null,
-                research_area_4: data.researchArea4 || null,
-                research_area_5: data.researchArea5 || null,
-                target_institution_1: data.targetInstitution1 || null,
-                target_institution_2: data.targetInstitution2 || null,
-                target_institution_3: data.targetInstitution3 || null,
-                // Ward research
-                ward_research_timing: data.wardResearchTiming || null,
-                collaboration_stages: data.collaborationStages || null,
-                // Contacts
-                has_research_contacts: data.hasContacts === 'yes',
-                updated_at: new Date().toISOString()
-            });
-
-            // Save contacts if any
-            if (data.hasContacts === 'yes') {
-                // Would need to collect contacts from the dynamic list
-                // This would require more complex logic
-            }
-            break;
-
-        case 7: // Clinical rotations
-            await sb.from('clinical_rotations').upsert({
-                user_id: currentUser.id,
-                // Clerkship
-                did_clerkship: data.didClerkship === 'yes',
-                clerkship_details: data.clerkshipDetails || null,
-                // Observerships
-                has_observership: data.hasObservership === 'yes',
-                observership_count: parseInt(data.observershipCount) || 0,
-                // Future observerships
-                plans_future_obs: data.plansFutureObs === 'yes',
-                future_obs_count: parseInt(data.futureObsCount) || 0,
-                future_obs_when: data.futureObsWhen || null,
-                future_obs_institutions: data.futureObsInstitutions || null,
-                future_obs_specialties: data.futureObsSpecialties || null,
-                future_obs_type: data.futureObsType || null,
-                updated_at: new Date().toISOString()
-            });
-
-            // Save observership details would need more complex logic for the dynamic list
-            break;
-
-        case 8: // Personal background
-            await sb.from('personal_background').upsert({
-                user_id: currentUser.id,
-                current_location: data.currentLocation,
-                other_location: data.otherLocation || null,
-                // Brasil/Other location questions
-                life_story: data.lifeStory || null,
-                family_situation: data.familySituation || null,
-                work_situation: data.workSituation || null,
-                why_usmle: data.whyUSMLE || null,
-                family_agreement: data.familyAgreement || null,
-                // USA location questions
-                how_moved_to_usa: data.howMovedUSA || null,
-                visa_type: data.visaTypeUSA || null,
-                how_got_visa: data.howGotVisa || null,
-                works_in_usa: data.worksUSA === 'yes',
-                how_got_job: data.howGotJob || null,
-                life_story_usa: data.lifeStoryUSA || null,
-                why_usmle_usa: data.whyUSMLE_USA || null,
-                // Standard family questions
-                has_children: data.hasChildren === 'yes',
-                children_count: parseInt(data.childrenCount) || 0,
-                is_married: data.isMarried === 'yes',
-                personal_notes: data.personalNotes || null,
-                updated_at: new Date().toISOString()
-            });
-            break;
-    }
-}
-
-// Load saved progress
-async function loadProgress() {
     try {
-        const sb = initSupabase();
-        const { data: progress } = await sb
-            .from('questionnaire_progress')
-            .select('*')
-            .eq('user_id', currentUser.id)
-            .maybeSingle();
+        const { error } = await sb
+            .from('users')
+            .update({
+                first_login_completed: true,
+                questionnaire_data: userData,
+                questionnaire_step: totalSteps,
+                updated_at: new Date().toISOString()
+            })
+            .eq('id', user.id);
 
-        if (progress && !progress.completed) {
-            currentPage = progress.current_page || 1;
-            // Load saved data for each page
-            await loadSavedData();
-        }
+        if (error) throw error;
+
+        // Update session storage
+        user.first_login_completed = true;
+        sessionStorage.setItem('wardUser', JSON.stringify(user));
+
+        // Redirect to dashboard
+        showSuccess('Questionário concluído com sucesso!');
+        setTimeout(() => {
+            redirectToDashboard(user);
+        }, 1500);
+
     } catch (error) {
-        console.error('Error loading progress:', error);
+        console.error('Error finishing questionnaire:', error);
+        showError('Erro ao finalizar questionário. Tente novamente.');
     }
 }
 
-// Update progress in database
-async function updateProgress(page, completed) {
-    try {
-        const sb = initSupabase();
-        await sb.from('questionnaire_progress').upsert({
-            user_id: currentUser.id,
-            current_page: page,
-            total_pages: totalPages,
-            completed: completed,
-            updated_at: new Date().toISOString()
-        });
-
-        if (completed) {
-            await sb.from('users').update({
-                first_login: false
-            }).eq('id', currentUser.id);
-        }
-    } catch (error) {
-        console.error('Error updating progress:', error);
+// Show error message
+function showError(message) {
+    const errorDiv = document.getElementById('errorMessage');
+    if (errorDiv) {
+        errorDiv.textContent = message;
+        errorDiv.style.display = 'block';
+        setTimeout(() => {
+            errorDiv.style.display = 'none';
+        }, 5000);
     }
 }
 
-// Load saved data from database
-async function loadSavedData() {
-    // Load data from all tables and populate forms
-    // This would be quite extensive - simplified here
-}
-
-// Create default landmarks after questionnaire completion
-async function createDefaultLandmarks() {
-    try {
-        const sb = initSupabase();
-
-        // Get default landmarks from database
-        const { data: defaults } = await sb
-            .from('default_landmarks')
-            .select('*')
-            .order('display_order');
-
-        if (defaults && defaults.length > 0) {
-            // Create landmarks for this user
-            const landmarks = defaults.map(def => ({
-                user_id: currentUser.id,
-                landmark_type: def.landmark_type,
-                mentor_name: def.mentor_name,
-                call_number: def.call_number,
-                title: def.title,
-                description: def.description,
-                display_order: def.display_order,
-                show_condition: def.show_condition,
-                is_completed: false,
-                is_urgent: false
-            }));
-
-            await sb.from('landmarks').insert(landmarks);
-        }
-    } catch (error) {
-        console.error('Error creating default landmarks:', error);
+// Show success message
+function showSuccess(message) {
+    const successDiv = document.getElementById('successMessage');
+    if (successDiv) {
+        successDiv.textContent = message;
+        successDiv.style.display = 'block';
     }
 }
 
-// Initialize on page load
-document.addEventListener('DOMContentLoaded', initQuestionnaire);
+// Show save indicator
+function showSaveIndicator() {
+    const saveIndicator = document.getElementById('saveIndicator');
+    if (saveIndicator) {
+        saveIndicator.style.display = 'block';
+        setTimeout(() => {
+            saveIndicator.style.display = 'none';
+        }, 2000);
+    }
+}

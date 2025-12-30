@@ -3,1193 +3,353 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ward Academy - Questionário</title>
-    <link rel="stylesheet" href="css/styles.css">
+    <title>Questionário Inicial - Ward Academy</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/questionnaire.css">
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div class="logo">Ward Academy</div>
+    <!-- Progress Bar -->
+    <div class="progress-container">
+        <div class="progress-header">
+            <h2>🎓 Ward Academy</h2>
+            <p class="progress-text">Passo 1 de 11</p>
         </div>
-    </header>
-
-    <div class="container questionnaire-container">
-        <h1>Questionário Inicial</h1>
-        <p>Por favor, complete este questionário para personalizarmos seu acompanhamento.</p>
-
         <div class="progress-bar">
-            <div class="progress-fill" id="progressBar"></div>
-        </div>
-
-        <!-- PAGE 1: Personal Information -->
-        <div id="page1" class="question-page active">
-            <div class="card">
-                <h2>Informações Pessoais</h2>
-                <p>Esses dados são importantes para futuras submissões de pesquisas para congressos e revistas.</p>
-
-                <div class="form-group">
-                    <label for="fullName">Nome Completo *</label>
-                    <input type="text" id="fullName" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="emailConfirm">Confirmar Email *</label>
-                    <input type="email" id="emailConfirm" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="cpf">CPF *</label>
-                    <input type="text" id="cpf" placeholder="000.000.000-00" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="orcid">ORCID (se tiver)</label>
-                    <input type="text" id="orcid" placeholder="0000-0000-0000-0000">
-                    <small>Você pode preencher futuramente se ainda não tiver.</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="addressLine1">Endereço - Linha 1 *</label>
-                    <input type="text" id="addressLine1" placeholder="Rua, número" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="addressLine2">Endereço - Linha 2</label>
-                    <input type="text" id="addressLine2" placeholder="Complemento, apartamento">
-                </div>
-
-                <div class="form-group">
-                    <label for="city">Cidade *</label>
-                    <input type="text" id="city" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="stateProvince">Estado/Província *</label>
-                    <input type="text" id="stateProvince" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="postalCode">CEP/Código Postal *</label>
-                    <input type="text" id="postalCode" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="country">País *</label>
-                    <select id="country" required>
-                        <option value="">Selecione...</option>
-                        <option value="Brasil">Brasil</option>
-                        <option value="Estados Unidos">Estados Unidos</option>
-                        <option value="Portugal">Portugal</option>
-                        <option value="Espanha">Espanha</option>
-                        <option value="Reino Unido">Reino Unido</option>
-                        <option value="Alemanha">Alemanha</option>
-                        <option value="França">França</option>
-                        <option value="Outro">Outro</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <label for="graduationDate">Data de Formatura em Medicina *</label>
-                    <input type="date" id="graduationDate" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="medicalSchool">Faculdade de Medicina *</label>
-                    <input type="text" id="medicalSchool" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="currentInstitution">Instituição Atual em que Trabalha *</label>
-                    <input type="text" id="currentInstitution" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="currentSpecialty">Especialidade Atual *</label>
-                    <input type="text" id="currentSpecialty" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="desiredSpecialty">Pretende atuar em qual especialidade nos EUA? *</label>
-                    <input type="text" id="desiredSpecialty" required>
-                </div>
-
-                <div class="btn-group">
-                    <button class="btn btn-secondary" onclick="saveToDashboard()">Salvar e ir para Dashboard</button>
-                    <button class="btn btn-primary" onclick="nextPage(1)">Próxima</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE 2: USMLE Information -->
-        <div id="page2" class="question-page">
-            <div class="card">
-                <h2>Informações sobre o USMLE</h2>
-
-                <div class="form-group">
-                    <label>Pretende seguir pelo caminho tradicional do USMLE ou pelo Alternate Pathway? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="pathwayTraditional" name="pathway" value="traditional" required>
-                            <label for="pathwayTraditional">Caminho Tradicional</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="pathwayAlternate" name="pathway" value="alternate">
-                            <label for="pathwayAlternate">Alternate Pathway</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Tem visto americano? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="visaYes" name="hasVisa" value="yes">
-                            <label for="visaYes">Sim</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="visaNo" name="hasVisa" value="no">
-                            <label for="visaNo">Não</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group hidden" id="visaTypeGroup">
-                    <label for="visaType">Qual visto?</label>
-                    <input type="text" id="visaType">
-                </div>
-
-                <div class="form-group">
-                    <label>Em qual etapa do processo está? *</label>
-                    <div class="checkbox-group">
-                        <div class="checkbox-item">
-                            <input type="radio" id="stageStarting" name="currentStage" value="starting">
-                            <label for="stageStarting">Ainda está iniciando</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="radio" id="stageStep1" name="currentStage" value="step1_done">
-                            <label for="stageStep1">Já fez Step 1</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="radio" id="stageStep2" name="currentStage" value="step2_done">
-                            <label for="stageStep2">Já fez Step 2 CK</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="radio" id="stageOET" name="currentStage" value="oet_done">
-                            <label for="stageOET">Já fez OET</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="radio" id="stageStep3" name="currentStage" value="step3_done">
-                            <label for="stageStep3">Já fez Step 3</label>
-                        </div>
-                        <div class="checkbox-item">
-                            <input type="radio" id="stageOther" name="currentStage" value="other">
-                            <label for="stageOther">Outra situação</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group hidden" id="stageOtherGroup">
-                    <label for="stageOtherText">Descreva sua situação:</label>
-                    <textarea id="stageOtherText" rows="3"></textarea>
-                </div>
-
-                <div class="form-group" id="nextExamGroup">
-                    <label for="nextExamDate">Quando pretende fazer a próxima prova?</label>
-                    <input type="date" id="nextExamDate">
-                </div>
-
-                <h3>Planejamento de Estudo</h3>
-                <p>Arraste as barras para definir quantos meses pretende dedicar a cada fase:</p>
-
-                <div class="range-group">
-                    <label for="firstPassMonths">First Pass (Padrão: 6 meses)</label>
-                    <input type="range" id="firstPassMonths" class="range-slider" min="1" max="12" value="6">
-                    <div class="range-value"><span id="firstPassValue">6</span> meses</div>
-                </div>
-
-                <div class="range-group">
-                    <label for="secondPassMonths">Second Pass (Padrão: 2 meses)</label>
-                    <input type="range" id="secondPassMonths" class="range-slider" min="0" max="6" value="2">
-                    <div class="range-value"><span id="secondPassValue">2</span> meses</div>
-                </div>
-
-                <div class="range-group">
-                    <label for="dedicatedMonths">Dedicated (Padrão: 1 mês)</label>
-                    <input type="range" id="dedicatedMonths" class="range-slider" min="0" max="3" value="1">
-                    <div class="range-value"><span id="dedicatedValue">1</span> mês</div>
-                </div>
-
-                <div class="btn-group">
-                    <button class="btn btn-secondary" onclick="previousPage(2)">Anterior</button>
-                    <button class="btn btn-secondary" onclick="saveToDashboard()">Salvar e ir para Dashboard</button>
-                    <button class="btn btn-primary" onclick="nextPage(2)">Próxima</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE 3: UWorld Preparation -->
-        <div id="page3" class="question-page">
-            <div class="card">
-                <h2>Preparação com UWorld</h2>
-
-                <div class="form-group">
-                    <label>Já comprou o UWorld? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="uworldBoughtYes" name="uworldBought" value="yes">
-                            <label for="uworldBoughtYes">Sim</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="uworldBoughtNo" name="uworldBought" value="no">
-                            <label for="uworldBoughtNo">Não</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group hidden" id="uworldActivatedGroup">
-                    <label>Já ativou? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="uworldActivatedYes" name="uworldActivated" value="yes">
-                            <label for="uworldActivatedYes">Sim</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="uworldActivatedNo" name="uworldActivated" value="no">
-                            <label for="uworldActivatedNo">Não</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group hidden" id="uworldExpirationGroup">
-                    <label for="uworldExpiration">Quando vence?</label>
-                    <input type="date" id="uworldExpiration">
-                </div>
-
-                <div class="form-group hidden" id="uworldSubscriptionGroup">
-                    <label>Quanto tempo de assinatura escolheu?</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="subscription6m" name="uworldSubscription" value="6months">
-                            <label for="subscription6m">6 meses</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="subscription1y" name="uworldSubscription" value="1year">
-                            <label for="subscription1y">1 ano</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="subscriptionOther" name="uworldSubscription" value="other">
-                            <label for="subscriptionOther">Outra opção</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group hidden" id="uworldUsageGroup">
-                    <h3>Uso do UWorld</h3>
-
-                    <div class="form-group">
-                        <label for="questionsDone">Quantas questões já fez?</label>
-                        <input type="number" id="questionsDone" min="0">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="overallPercentage">Qual é a porcentagem de acertos geral?</label>
-                        <input type="number" id="overallPercentage" min="0" max="100" step="0.1">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="lowestPercentage">Menor porcentagem (opcional)</label>
-                        <input type="number" id="lowestPercentage" min="0" max="100" step="0.1">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="lowestSystem">Qual era esse teste (system)?</label>
-                        <input type="text" id="lowestSystem">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="highestPercentage">Maior porcentagem (opcional)</label>
-                        <input type="number" id="highestPercentage" min="0" max="100" step="0.1">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="highestSystem">Qual era esse teste (system)?</label>
-                        <input type="text" id="highestSystem">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Quais Systems e Categories já fez questões?</label>
-                        <p><small>Clique nos systems para expandir e marcar as categories concluídas. Marque com ⚠️ as que teve mais dificuldade.</small></p>
-                        <div id="systemsCategoriesList" class="toggle-list">
-                            <!-- Will be populated by JavaScript -->
-                        </div>
-                    </div>
-                </div>
-
-                <div class="btn-group">
-                    <button class="btn btn-secondary" onclick="previousPage(3)">Anterior</button>
-                    <button class="btn btn-secondary" onclick="saveToDashboard()">Salvar e ir para Dashboard</button>
-                    <button class="btn btn-primary" onclick="nextPage(3)">Próxima</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE 4: English Proficiency -->
-        <div id="page4" class="question-page">
-            <div class="card">
-                <h2>Proficiência em Inglês</h2>
-
-                <div class="form-group">
-                    <label>Como você avalia seu inglês? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="englishBasic" name="englishLevel" value="basic" required>
-                            <label for="englishBasic">Básico</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="englishIntermediate" name="englishLevel" value="intermediate">
-                            <label for="englishIntermediate">Intermediário</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="englishAdvanced" name="englishLevel" value="advanced">
-                            <label for="englishAdvanced">Avançado</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="englishFluent" name="englishLevel" value="fluent">
-                            <label for="englishFluent">Fluente</label>
-                        </div>
-                    </div>
-                </div>
-
-                <h3>Compreensão de Leitura</h3>
-
-                <div class="form-group">
-                    <label>Consegue ler e entender as questões do UWorld sem precisar traduzir? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="understandsUworldYes" name="understandsUworld" value="yes" required>
-                            <label for="understandsUworldYes">Sim, entendo bem</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="understandsUworldPartial" name="understandsUworld" value="partial">
-                            <label for="understandsUworldPartial">Entendo parcialmente</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="understandsUworldNo" name="understandsUworld" value="no">
-                            <label for="understandsUworldNo">Não, preciso traduzir</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Precisa frequentemente pesquisar palavras durante o estudo? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="wordLookupFrequent" name="wordLookup" value="frequent" required>
-                            <label for="wordLookupFrequent">Sim, frequentemente</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="wordLookupSometimes" name="wordLookup" value="sometimes">
-                            <label for="wordLookupSometimes">Às vezes</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="wordLookupRarely" name="wordLookup" value="rarely">
-                            <label for="wordLookupRarely">Raramente</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Está traduzindo o UWorld para estudar? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="translatingYes" name="translating" value="yes" required>
-                            <label for="translatingYes">Sim, estou traduzindo</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="translatingNo" name="translating" value="no">
-                            <label for="translatingNo">Não, estudo em inglês</label>
-                        </div>
-                    </div>
-                </div>
-
-                <h3>Compreensão Auditiva</h3>
-
-                <div class="form-group">
-                    <label>Consegue entender as aulas do Boards and Beyond e outros cursos em inglês? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="understandsLecturesYes" name="understandsLectures" value="yes" required>
-                            <label for="understandsLecturesYes">Sim, entendo bem</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="understandsLecturesPartial" name="understandsLectures" value="partial">
-                            <label for="understandsLecturesPartial">Entendo parcialmente</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="understandsLecturesNo" name="understandsLectures" value="no">
-                            <label for="understandsLecturesNo">Não, tenho muita dificuldade</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Tem dificuldade com escuta em inglês (listening)? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="listeningDifficultyHigh" name="listeningDifficulty" value="high" required>
-                            <label for="listeningDifficultyHigh">Sim, muita dificuldade</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="listeningDifficultyMedium" name="listeningDifficulty" value="medium">
-                            <label for="listeningDifficultyMedium">Alguma dificuldade</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="listeningDifficultyLow" name="listeningDifficulty" value="low">
-                            <label for="listeningDifficultyLow">Pouca ou nenhuma dificuldade</label>
-                        </div>
-                    </div>
-                </div>
-
-                <h3>OET e Aulas de Inglês</h3>
-
-                <div class="form-group">
-                    <label>Já fez OET? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="oetYes" name="oetTaken" value="yes" required>
-                            <label for="oetYes">Sim</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="oetNo" name="oetTaken" value="no">
-                            <label for="oetNo">Não</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group hidden" id="oetScoresGroup">
-                    <h4>Notas do OET</h4>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="oetListening">Listening</label>
-                            <input type="number" id="oetListening" min="0" max="500">
-                        </div>
-                        <div class="form-group">
-                            <label for="oetReading">Reading</label>
-                            <input type="number" id="oetReading" min="0" max="500">
-                        </div>
-                    </div>
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label for="oetWriting">Writing</label>
-                            <input type="number" id="oetWriting" min="0" max="500">
-                        </div>
-                        <div class="form-group">
-                            <label for="oetSpeaking">Speaking</label>
-                            <input type="number" id="oetSpeaking" min="0" max="500">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Está fazendo aulas de inglês? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="englishClassesYes" name="takingClasses" value="yes" required>
-                            <label for="englishClassesYes">Sim</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="englishClassesNo" name="takingClasses" value="no">
-                            <label for="englishClassesNo">Não</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group hidden" id="englishSchoolGroup">
-                    <label for="englishSchool">Qual escola?</label>
-                    <input type="text" id="englishSchool">
-                </div>
-
-                <div class="btn-group">
-                    <button class="btn btn-secondary" onclick="previousPage(4)">Anterior</button>
-                    <button class="btn btn-secondary" onclick="saveToDashboard()">Salvar e ir para Dashboard</button>
-                    <button class="btn btn-primary" onclick="nextPage(4)">Próxima</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE 5: Anki -->
-        <div id="page5" class="question-page">
-            <div class="card">
-                <h2>Anki</h2>
-
-                <div class="form-group">
-                    <label>Já baixou o aplicativo de repetição espaçada Anki? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="ankiDownloadedYes" name="ankiDownloaded" value="yes" required>
-                            <label for="ankiDownloadedYes">Sim</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="ankiDownloadedNo" name="ankiDownloaded" value="no">
-                            <label for="ankiDownloadedNo">Não</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Já usou o Anki? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="ankiUsedYes" name="ankiUsed" value="yes" required>
-                            <label for="ankiUsedYes">Sim</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="ankiUsedNo" name="ankiUsed" value="no">
-                            <label for="ankiUsedNo">Não</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="ankiDetailsGroup" class="hidden">
-                    <div class="form-group">
-                        <label for="ankiDeck">Qual deck usa?</label>
-                        <input type="text" id="ankiDeck" placeholder="Ex: AnKing, Zanki, etc.">
-                    </div>
-
-                    <div class="form-group">
-                        <label>Como tem usado o Anki?</label>
-                        <div class="radio-group">
-                            <div class="radio-item">
-                                <input type="radio" id="usageDaily" name="ankiUsageFreq" value="daily">
-                                <label for="usageDaily">Todos os dias</label>
-                            </div>
-                            <div class="radio-item">
-                                <input type="radio" id="usageAlternate" name="ankiUsageFreq" value="alternate">
-                                <label for="usageAlternate">Dia sim, dia não</label>
-                            </div>
-                            <div class="radio-item">
-                                <input type="radio" id="usageFewTimes" name="ankiUsageFreq" value="few_times">
-                                <label for="usageFewTimes">Poucas vezes na semana</label>
-                            </div>
-                            <div class="radio-item">
-                                <input type="radio" id="usageRarely" name="ankiUsageFreq" value="rarely">
-                                <label for="usageRarely">Quase não tem usado</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Cria seus próprios flashcards?</label>
-                        <div class="radio-group">
-                            <div class="radio-item">
-                                <input type="radio" id="createsYes" name="createsCards" value="yes">
-                                <label for="createsYes">Sim</label>
-                            </div>
-                            <div class="radio-item">
-                                <input type="radio" id="createsNo" name="createsCards" value="no">
-                                <label for="createsNo">Não</label>
-                            </div>
-                            <div class="radio-item">
-                                <input type="radio" id="createsOnlyAnking" name="createsCards" value="only_anking">
-                                <label for="createsOnlyAnking">Não, uso apenas o AnKing</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Em quais dispositivos usa o Anki? (Marque todos que se aplicam)</label>
-                        <div class="checkbox-group">
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="deviceComputer" name="devices" value="computador">
-                                <label for="deviceComputer">Computador</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="deviceMac" name="devices" value="mac">
-                                <label for="deviceMac">Mac</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="deviceIphone" name="devices" value="iphone">
-                                <label for="deviceIphone">iPhone</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="devicePhone" name="devices" value="telefone">
-                                <label for="devicePhone">Telefone Android</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="deviceTablet" name="devices" value="tablet">
-                                <label for="deviceTablet">Tablet</label>
-                            </div>
-                            <div class="checkbox-item">
-                                <input type="checkbox" id="deviceIpad" name="devices" value="ipad">
-                                <label for="deviceIpad">iPad</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Qual dispositivo usa com mais frequência?</label>
-                        <select id="primaryDevice">
-                            <option value="">Selecione...</option>
-                            <option value="computador">Computador</option>
-                            <option value="mac">Mac</option>
-                            <option value="iphone">iPhone</option>
-                            <option value="telefone">Telefone Android</option>
-                            <option value="tablet">Tablet</option>
-                            <option value="ipad">iPad</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ankiCardsMature">Quantos cards mature tem?</label>
-                        <input type="number" id="ankiCardsMature" min="0">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ankiCardsYoung">Quantos cards young tem?</label>
-                        <input type="number" id="ankiCardsYoung" min="0">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ankiCardsNew">Quantos cards new tem?</label>
-                        <input type="number" id="ankiCardsNew" min="0">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ankiDailyNew">Quantos cards novos faz por dia?</label>
-                        <input type="number" id="ankiDailyNew" min="0">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ankiRetention">Qual sua taxa de retenção (%)? </label>
-                        <input type="number" id="ankiRetention" min="0" max="100" step="0.1">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="ankiSince">Desde quando usa o Anki? (Média de cards por dia)</label>
-                        <input type="date" id="ankiSince">
-                        <small>Aproximadamente desde quando começou a usar</small>
-                    </div>
-                </div>
-
-                <div class="btn-group">
-                    <button class="btn btn-secondary" onclick="previousPage(5)">Anterior</button>
-                    <button class="btn btn-secondary" onclick="saveToDashboard()">Salvar e ir para Dashboard</button>
-                    <button class="btn btn-primary" onclick="nextPage(5)">Próxima</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE 6: Research -->
-        <div id="page6" class="question-page">
-            <div class="card">
-                <h2>Pesquisa</h2>
-
-                <h3>Confirmação de Dados para Pesquisa</h3>
-                <p><small>Esses dados são essenciais para futuras submissões de pesquisas para congressos e revistas.</small></p>
-
-                <div class="form-group">
-                    <label for="orcidConfirm">ORCID (se tiver)</label>
-                    <input type="text" id="orcidConfirm" placeholder="0000-0000-0000-0000">
-                    <small>Você pode preencher futuramente se ainda não tiver.</small>
-                </div>
-
-                <div class="form-group">
-                    <label for="emailConfirmResearch">Confirmar Email *</label>
-                    <input type="email" id="emailConfirmResearch" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="fullNameConfirmResearch">Nome Completo *</label>
-                    <input type="text" id="fullNameConfirmResearch" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="affiliatedInstitution">Instituição Atual Afiliada *</label>
-                    <input type="text" id="affiliatedInstitution" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="currentSpecialtyResearch">Especialidade Atual *</label>
-                    <input type="text" id="currentSpecialtyResearch" required>
-                </div>
-
-                <div class="form-group">
-                    <label for="currentDepartment">Departamento *</label>
-                    <input type="text" id="currentDepartment" required>
-                </div>
-
-                <h3>Experiência com Pesquisa</h3>
-
-                <div class="form-group">
-                    <label>Qual é seu nível de experiência com pesquisa? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="expNone" name="researchExpLevel" value="nenhuma" required>
-                            <label for="expNone">Nenhuma</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="expIncomplete" name="researchExpLevel" value="projetos_nao_concluidos">
-                            <label for="expIncomplete">Já participei de projetos ainda não concluídos</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="expCongress" name="researchExpLevel" value="apresentados_congresso">
-                            <label for="expCongress">Já tive projetos apresentados em congresso</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="expNonIndexed" name="researchExpLevel" value="publicacoes_nao_indexadas">
-                            <label for="expNonIndexed">Já tive publicações não indexadas no PubMed</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="expPubmed" name="researchExpLevel" value="publicacoes_pubmed">
-                            <label for="expPubmed">Tenho publicações indexadas no PubMed</label>
-                        </div>
-                    </div>
-                </div>
-
-                <h3>Revisão Sistemática</h3>
-
-                <div class="form-group">
-                    <label>Já participou de alguma revisão sistemática? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="sysRevNo" name="systematicReview" value="no" required>
-                            <label for="sysRevNo">Não</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="sysRevPontual" name="systematicReview" value="pontual">
-                            <label for="sysRevPontual">Sim, fiz algo pontual</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="sysRevFirst" name="systematicReview" value="primeiro_autor">
-                            <label for="sysRevFirst">Sim, fui primeiro autor</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="sysRevOther" name="systematicReview" value="outro">
-                            <label for="sysRevOther">Outra opção</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group hidden" id="sysRevDetailsGroup">
-                    <label for="sysRevOtherText">Descreva sua participação:</label>
-                    <textarea id="sysRevOtherText" rows="2"></textarea>
-                </div>
-
-                <div class="form-group hidden" id="sysRevStatusGroup">
-                    <label>Essa revisão sistemática foi: *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="sysRevPublished" name="sysRevStatus" value="publicada_indexada">
-                            <label for="sysRevPublished">Publicada e indexada</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="sysRevNotIndexed" name="sysRevStatus" value="nao_indexada">
-                            <label for="sysRevNotIndexed">Não indexada</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="sysRevCongress" name="sysRevStatus" value="apresentada_congresso">
-                            <label for="sysRevCongress">Apresentada em congresso</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="sysRevInProgress" name="sysRevStatus" value="em_producao">
-                            <label for="sysRevInProgress">Ainda em produção</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="sysRevAbandoned" name="sysRevStatus" value="abandonada">
-                            <label for="sysRevAbandoned">Abandonada</label>
-                        </div>
-                    </div>
-                </div>
-
-                <h3>Áreas de Interesse em Pesquisa</h3>
-                <p><small>Liste até 5 áreas ou temas que te interessam em pesquisa</small></p>
-
-                <div class="form-group">
-                    <label for="researchArea1">Área de Interesse 1 *</label>
-                    <input type="text" id="researchArea1" placeholder="Ex: Cardiologia, Diabetes, Oncologia..." required>
-                </div>
-
-                <div class="form-group">
-                    <label for="researchArea2">Área de Interesse 2</label>
-                    <input type="text" id="researchArea2">
-                </div>
-
-                <div class="form-group">
-                    <label for="researchArea3">Área de Interesse 3</label>
-                    <input type="text" id="researchArea3">
-                </div>
-
-                <div class="form-group">
-                    <label for="researchArea4">Área de Interesse 4</label>
-                    <input type="text" id="researchArea4">
-                </div>
-
-                <div class="form-group">
-                    <label for="researchArea5">Área de Interesse 5</label>
-                    <input type="text" id="researchArea5">
-                </div>
-
-                <h3>Instituições para Networking nos EUA</h3>
-                <p><small>Liste até 3 instituições que você gostaria muito de trabalhar ou fazer networking</small></p>
-
-                <div class="form-group">
-                    <label for="targetInstitution1">Instituição 1 *</label>
-                    <input type="text" id="targetInstitution1" placeholder="Ex: Mayo Clinic, Johns Hopkins..." required>
-                </div>
-
-                <div class="form-group">
-                    <label for="targetInstitution2">Instituição 2</label>
-                    <input type="text" id="targetInstitution2">
-                </div>
-
-                <div class="form-group">
-                    <label for="targetInstitution3">Instituição 3</label>
-                    <input type="text" id="targetInstitution3">
-                </div>
-
-                <h3>Pesquisa na Ward Academy</h3>
-
-                <div class="form-group">
-                    <label>Pretende realizar pesquisas na Ward Academy? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="wardResearchNow" name="wardResearchTiming" value="imediatamente" required>
-                            <label for="wardResearchNow">Sim, imediatamente</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="wardResearchAfter" name="wardResearchTiming" value="depois_usmle">
-                            <label for="wardResearchAfter">Sim, depois do USMLE</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="wardResearchNo" name="wardResearchTiming" value="nao_suficiente">
-                            <label for="wardResearchNo">Não, já tenho o suficiente</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="collaborationStages">Em quais etapas de uma revisão sistemática você poderia colaborar com outros membros da Ward Academy?</label>
-                    <textarea id="collaborationStages" rows="4" placeholder="Ex: Triagem de artigos, extração de dados, escrita, análise estatística..."></textarea>
-                    <small>Descreva as etapas em que você se sente confortável para ajudar</small>
-                </div>
-
-                <div class="form-group">
-                    <label>Já tem contatos para pesquisa nos EUA?</label>
-                    <p><small>Adicione os contatos que você já tem. Você pode adicionar mais depois.</small></p>
-                    <button type="button" class="btn btn-sm btn-secondary" id="addContactBtn">➕ Adicionar Contato</button>
-                    <div id="contactsList" class="dynamic-list">
-                        <!-- Contacts will be added here -->
-                    </div>
-                </div>
-
-                <div class="btn-group">
-                    <button class="btn btn-secondary" onclick="previousPage(6)">Anterior</button>
-                    <button class="btn btn-secondary" onclick="saveToDashboard()">Salvar e ir para Dashboard</button>
-                    <button class="btn btn-primary" onclick="nextPage(6)">Próxima</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE 7: Rotations/Observerships -->
-        <div id="page7" class="question-page">
-            <div class="card">
-                <h2>Estágios Médicos - Rotações e Observerships</h2>
-
-                <h3>Clerkships nos EUA</h3>
-
-                <div class="form-group">
-                    <label>Durante a faculdade, você fez algum clerkship nos EUA? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="clerkshipYes" name="didClerkship" value="yes" required>
-                            <label for="clerkshipYes">Sim</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="clerkshipNo" name="didClerkship" value="no">
-                            <label for="clerkshipNo">Não</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group hidden" id="clerkshipDetailsGroup">
-                    <label for="clerkshipDetails">Detalhes sobre o(s) clerkship(s):</label>
-                    <textarea id="clerkshipDetails" rows="4" placeholder="Descreva quando, onde, qual especialidade..."></textarea>
-                </div>
-
-                <h3>Observerships</h3>
-
-                <div class="form-group">
-                    <label>Já fez ou está programado para fazer alguma observership? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="observershipYes" name="hasObservership" value="yes" required>
-                            <label for="observershipYes">Sim</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="observershipNo" name="hasObservership" value="no">
-                            <label for="observershipNo">Não</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="observershipDetailsGroup" class="hidden">
-                    <p><strong>Observerships já realizadas ou programadas</strong></p>
-                    <p><small>Adicione os detalhes de cada observership. Clique em "Adicionar" para incluir cada uma.</small></p>
-                    <button type="button" class="btn btn-sm btn-secondary" id="addObservershipBtn">➕ Adicionar Observership</button>
-                    <div id="observershipsList" class="dynamic-list">
-                        <!-- Observerships will be added here -->
-                    </div>
-                </div>
-
-                <h3>Observerships Futuras</h3>
-
-                <div class="form-group">
-                    <label>Pretende fazer mais observerships no futuro? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="futureObsYes" name="plansFutureObs" value="yes" required>
-                            <label for="futureObsYes">Sim</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="futureObsNo" name="plansFutureObs" value="no">
-                            <label for="futureObsNo">Não</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="futureObsGroup" class="hidden">
-                    <div class="form-group">
-                        <label for="futureObsCount">Quantas observerships pretende fazer?</label>
-                        <input type="number" id="futureObsCount" min="1" max="20">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="futureObsWhen">Quando pretende fazer?</label>
-                        <textarea id="futureObsWhen" rows="2" placeholder="Ex: Nos próximos 6 meses, após o Step 1, etc."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="futureObsInstitutions">Quais instituições tem em mente?</label>
-                        <textarea id="futureObsInstitutions" rows="3" placeholder="Liste as instituições que está considerando (separe por vírgula ou linha)"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="futureObsSpecialties">Quais especialidades?</label>
-                        <textarea id="futureObsSpecialties" rows="2" placeholder="Liste as especialidades de interesse"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Pretende fazer em clínicas privadas ou hospitais?</label>
-                        <div class="radio-group">
-                            <div class="radio-item">
-                                <input type="radio" id="futurePrivate" name="futureObsType" value="private">
-                                <label for="futurePrivate">Clínicas privadas</label>
-                            </div>
-                            <div class="radio-item">
-                                <input type="radio" id="futureHospitals" name="futureObsType" value="hospitals">
-                                <label for="futureHospitals">Hospitais</label>
-                            </div>
-                            <div class="radio-item">
-                                <input type="radio" id="futureBoth" name="futureObsType" value="both">
-                                <label for="futureBoth">Ambos</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="btn-group">
-                    <button class="btn btn-secondary" onclick="previousPage(7)">Anterior</button>
-                    <button class="btn btn-secondary" onclick="saveToDashboard()">Salvar e ir para Dashboard</button>
-                    <button class="btn btn-primary" onclick="nextPage(7)">Próxima</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- PAGE 8: Personal Background -->
-        <div id="page8" class="question-page">
-            <div class="card">
-                <h2>Informações Pessoais Adicionais</h2>
-
-                <h3>Localização Atual</h3>
-
-                <div class="form-group">
-                    <label>Onde você mora atualmente? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="locationBrazil" name="currentLocation" value="brasil" required>
-                            <label for="locationBrazil">Brasil</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="locationUSA" name="currentLocation" value="eua">
-                            <label for="locationUSA">Estados Unidos (EUA)</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="locationOther" name="currentLocation" value="outro">
-                            <label for="locationOther">Outro país</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group hidden" id="locationOtherGroup">
-                    <label for="locationOtherText">Qual país?</label>
-                    <input type="text" id="locationOtherText" placeholder="Digite o país onde mora">
-                </div>
-
-                <!-- QUESTIONS FOR BRAZIL/OTHER LOCATION -->
-                <div id="brazilOtherQuestions" class="hidden">
-                    <h3>Sobre Você e Sua Jornada</h3>
-
-                    <div class="form-group">
-                        <label for="lifeStory">Conte um pouco sobre sua história de vida:</label>
-                        <textarea id="lifeStory" rows="5" placeholder="Como tem sido sua trajetória até aqui..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="familySituation">Situação familiar:</label>
-                        <textarea id="familySituation" rows="3" placeholder="Descreva sua situação familiar atual..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="workSituation">Situação de trabalho:</label>
-                        <textarea id="workSituation" rows="3" placeholder="Onde trabalha atualmente? Como tem sido?"></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="whyUSMLE">O que te fez escolher o processo do USMLE?</label>
-                        <textarea id="whyUSMLE" rows="4" placeholder="Conte-nos suas motivações e objetivos..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Sua família está de acordo com seu processo de equivalência nos EUA? *</label>
-                        <div class="radio-group">
-                            <div class="radio-item">
-                                <input type="radio" id="familyAgreementYes" name="familyAgreement" value="yes">
-                                <label for="familyAgreementYes">Sim, totalmente de acordo</label>
-                            </div>
-                            <div class="radio-item">
-                                <input type="radio" id="familyAgreementPartial" name="familyAgreement" value="partial">
-                                <label for="familyAgreementPartial">Parcialmente de acordo</label>
-                            </div>
-                            <div class="radio-item">
-                                <input type="radio" id="familyAgreementNo" name="familyAgreement" value="no">
-                                <label for="familyAgreementNo">Não muito de acordo</label>
-                            </div>
-                            <div class="radio-item">
-                                <input type="radio" id="familyAgreementComplicated" name="familyAgreement" value="complicated">
-                                <label for="familyAgreementComplicated">É complicado</label>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- QUESTIONS FOR USA LOCATION -->
-                <div id="usaQuestions" class="hidden">
-                    <h3>Sobre Sua Vida nos EUA</h3>
-
-                    <div class="form-group">
-                        <label for="howMovedUSA">Como você foi para os EUA?</label>
-                        <textarea id="howMovedUSA" rows="4" placeholder="Conte sua história de como conseguiu se mudar para os EUA..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="visaTypeUSA">Qual tipo de visto você tem?</label>
-                        <input type="text" id="visaTypeUSA" placeholder="Ex: H1B, J1, Green Card, Cidadania...">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="howGotVisa">Como conseguiu esse visto?</label>
-                        <textarea id="howGotVisa" rows="4" placeholder="Descreva o processo de obtenção do visto..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>Você trabalha nos EUA atualmente? *</label>
-                        <div class="radio-group">
-                            <div class="radio-item">
-                                <input type="radio" id="worksUSAYes" name="worksUSA" value="yes">
-                                <label for="worksUSAYes">Sim</label>
-                            </div>
-                            <div class="radio-item">
-                                <input type="radio" id="worksUSANo" name="worksUSA" value="no">
-                                <label for="worksUSANo">Não</label>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="form-group hidden" id="howGotJobGroup">
-                        <label for="howGotJob">Como conseguiu esse trabalho?</label>
-                        <textarea id="howGotJob" rows="4" placeholder="Descreva como conseguiu seu emprego nos EUA..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="lifeStoryUSA">Conte um pouco sobre sua história de vida e família:</label>
-                        <textarea id="lifeStoryUSA" rows="5" placeholder="Como tem sido sua trajetória e vida familiar nos EUA..."></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="whyUSMLE_USA">O que te fez escolher o processo do USMLE?</label>
-                        <textarea id="whyUSMLE_USA" rows="4" placeholder="Suas motivações e objetivos com o USMLE..."></textarea>
-                    </div>
-                </div>
-
-                <h3>Informações Familiares</h3>
-
-                <div class="form-group">
-                    <label>Tem filhos? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="childrenYes" name="hasChildren" value="yes" required>
-                            <label for="childrenYes">Sim</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="childrenNo" name="hasChildren" value="no">
-                            <label for="childrenNo">Não</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group hidden" id="childrenCountGroup">
-                    <label for="childrenCount">Quantos filhos?</label>
-                    <input type="number" id="childrenCount" min="1">
-                </div>
-
-                <div class="form-group">
-                    <label>É casado(a)? *</label>
-                    <div class="radio-group">
-                        <div class="radio-item">
-                            <input type="radio" id="marriedYes" name="isMarried" value="yes" required>
-                            <label for="marriedYes">Sim</label>
-                        </div>
-                        <div class="radio-item">
-                            <input type="radio" id="marriedNo" name="isMarried" value="no">
-                            <label for="marriedNo">Não</label>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label for="personalNotes">Existe alguma informação adicional que você gostaria de compartilhar?</label>
-                    <textarea id="personalNotes" rows="4" placeholder="Qualquer informação que você considere relevante para seu acompanhamento..."></textarea>
-                </div>
-
-                <div class="btn-group">
-                    <button class="btn btn-secondary" onclick="previousPage(8)">Anterior</button>
-                    <button class="btn btn-secondary" onclick="saveToDashboard()">Salvar e ir para Dashboard</button>
-                    <button class="btn btn-primary" onclick="finishQuestionnaire()">Finalizar Questionário</button>
-                </div>
-            </div>
-        </div>
-
-        <div id="completionMessage" class="card hidden">
-            <h2>Questionário Completo!</h2>
-            <p>Obrigado por completar o questionário inicial. Suas informações foram salvas com sucesso.</p>
-            <p>Seus landmarks foram criados e você pode acessá-los no menu.</p>
-            <a href="dashboard.html" class="btn btn-primary">Ir para o Dashboard</a>
+            <div class="progress-fill" style="width: 9%"></div>
         </div>
     </div>
 
-    <!-- Supabase Client Library -->
+    <!-- Main Content -->
+    <div class="questionnaire-container">
+        <!-- Error Message -->
+        <div id="errorMessage" class="error-message" style="display: none;"></div>
+
+        <!-- Success Message -->
+        <div id="successMessage" class="success-message" style="display: none;"></div>
+
+        <!-- Save Indicator -->
+        <div id="saveIndicator" class="save-indicator" style="display: none;">
+            ✓ Salvo automaticamente
+        </div>
+
+        <!-- ================================================================
+             STEP 1: INFORMAÇÕES BÁSICAS
+             ================================================================ -->
+        <div id="step1" class="step-content">
+            <h1>Informações Básicas</h1>
+            <p class="step-description">Vamos começar com algumas informações sobre sua jornada no USMLE.</p>
+
+            <div class="form-group">
+                <label>Qual prova você está fazendo?</label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="exam_taking" value="step1">
+                        <span>Step 1</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="exam_taking" value="step2ck">
+                        <span>Step 2 CK</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="exam_taking" value="step3">
+                        <span>Step 3</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="study_start_date">Quando você começou a estudar?</label>
+                <input type="date" id="study_start_date" name="study_start_date">
+            </div>
+
+            <div class="form-group">
+                <label for="test_date">Quando você pretende fazer a prova?</label>
+                <input type="date" id="test_date" name="test_date">
+            </div>
+        </div>
+
+        <!-- ================================================================
+             STEP 2: PLANEJAMENTO DE ESTUDOS
+             ================================================================ -->
+        <div id="step2" class="step-content" style="display: none;">
+            <h1>Planejamento de Estudos</h1>
+            <p class="step-description">Defina a duração ideal de cada fase do seu estudo.</p>
+
+            <div class="slider-group">
+                <label for="first_pass_months">First Pass (revisão inicial)</label>
+                <input type="range" id="first_pass_months" name="first_pass_months"
+                       min="3" max="24" value="12" step="1">
+                <span class="slider-value">12 meses</span>
+            </div>
+
+            <div class="slider-group">
+                <label for="second_pass_months">Second Pass (revisão aprofundada)</label>
+                <input type="range" id="second_pass_months" name="second_pass_months"
+                       min="1" max="12" value="4" step="1">
+                <span class="slider-value">4 meses</span>
+            </div>
+
+            <div class="slider-group">
+                <label for="dedicated_months">Dedicated (preparação final)</label>
+                <input type="range" id="dedicated_months" name="dedicated_months"
+                       min="1" max="6" value="2" step="1">
+                <span class="slider-value">2 meses</span>
+            </div>
+
+            <div class="info-box">
+                <p><strong>Dica:</strong> O First Pass é quando você aprende o conteúdo pela primeira vez. O Second Pass é quando você revisa e consolida. O Dedicated é a preparação intensiva antes da prova.</p>
+            </div>
+        </div>
+
+        <!-- ================================================================
+             STEP 3: SELEÇÃO DO UWORLD
+             ================================================================ -->
+        <div id="step3" class="step-content" style="display: none;">
+            <h1>Banco de Questões UWorld</h1>
+            <p class="step-description">Selecione qual banco de questões UWorld você está utilizando.</p>
+
+            <div class="form-group">
+                <label for="uworld_exam">Qual UWorld você está usando?</label>
+                <select id="uworld_exam" name="uworld_exam" class="select-input">
+                    <option value="">Selecione...</option>
+                    <option value="step1">UWorld Step 1</option>
+                    <option value="step2ck">UWorld Step 2 CK</option>
+                    <option value="step3">UWorld Step 3</option>
+                </select>
+            </div>
+
+            <div class="info-box">
+                <p><strong>Próximo passo:</strong> Você irá acompanhar seu progresso em cada sistema e categoria do UWorld.</p>
+            </div>
+        </div>
+
+        <!-- ================================================================
+             STEP 4: PROGRESSO NO UWORLD
+             ================================================================ -->
+        <div id="step4" class="step-content" style="display: none;">
+            <h1>Acompanhamento UWorld</h1>
+            <p class="step-description">Marque os sistemas e categorias que você já completou, e indique a dificuldade.</p>
+
+            <div id="uworldSystemsContainer" class="uworld-container">
+                <!-- Será preenchido dinamicamente pelo JavaScript -->
+            </div>
+
+            <div class="info-box">
+                <p><strong>Legenda:</strong> Marque como concluído quando terminar todas as questões. Indique a dificuldade para seu mentor acompanhar suas áreas de desafio.</p>
+            </div>
+        </div>
+
+        <!-- ================================================================
+             STEP 5: NÍVEL DE INGLÊS
+             ================================================================ -->
+        <div id="step5" class="step-content" style="display: none;">
+            <h1>Proficiência em Inglês</h1>
+            <p class="step-description">Como você avalia seu nível de inglês?</p>
+
+            <div class="form-group">
+                <label>Nível de Inglês</label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="english_level" value="fluent">
+                        <span>Fluente</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="english_level" value="advanced">
+                        <span>Avançado</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="english_level" value="intermediate">
+                        <span>Intermediário</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="english_level" value="basic">
+                        <span>Básico</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="englishDetailsGroup" class="form-group conditional-field" style="display: none;">
+                <label for="english_details">Como você está trabalhando para melhorar seu inglês?</label>
+                <textarea id="english_details" name="english_details" rows="4"
+                          placeholder="Descreva cursos, aplicativos, ou métodos que você está usando..."></textarea>
+            </div>
+        </div>
+
+        <!-- ================================================================
+             STEP 6: USO DO ANKI
+             ================================================================ -->
+        <div id="step6" class="step-content" style="display: none;">
+            <h1>Anki (Flashcards)</h1>
+            <p class="step-description">Você utiliza Anki para memorização?</p>
+
+            <div class="form-group">
+                <label>Você usa Anki?</label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="uses_anki" value="yes">
+                        <span>Sim</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="uses_anki" value="no">
+                        <span>Não</span>
+                    </label>
+                </div>
+            </div>
+
+            <div id="ankiDetailsGroup" class="form-group conditional-field" style="display: none;">
+                <label for="anki_details">Qual deck você está usando? Quantos cards por dia?</label>
+                <textarea id="anki_details" name="anki_details" rows="4"
+                          placeholder="Ex: Anking deck, 100 cards/dia..."></textarea>
+            </div>
+        </div>
+
+        <!-- ================================================================
+             STEP 7: EXPERIÊNCIA EM PESQUISA (Parte 1)
+             ================================================================ -->
+        <div id="step7" class="step-content" style="display: none;">
+            <h1>Experiência em Pesquisa</h1>
+            <p class="step-description">Você tem experiência com pesquisa científica?</p>
+
+            <div class="form-group">
+                <label>Você já participou de algum projeto de pesquisa?</label>
+                <div class="radio-group">
+                    <label class="radio-label">
+                        <input type="radio" name="has_research_experience" value="yes">
+                        <span>Sim</span>
+                    </label>
+                    <label class="radio-label">
+                        <input type="radio" name="has_research_experience" value="no">
+                        <span>Não</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <p><strong>Por que importa:</strong> Experiência em pesquisa é valorizada em aplicações de residência nos EUA. Vamos ajudá-lo a construir seu currículo acadêmico.</p>
+            </div>
+        </div>
+
+        <!-- ================================================================
+             STEP 8: INTERESSES EM PESQUISA (Parte 2)
+             ================================================================ -->
+        <div id="step8" class="step-content" style="display: none;">
+            <h1>Interesses em Pesquisa</h1>
+            <p class="step-description">Quais áreas ou tópicos de pesquisa te interessam?</p>
+
+            <div class="form-group">
+                <label for="research_interest">Descreva seus interesses em pesquisa</label>
+                <textarea id="research_interest" name="research_interest" rows="6"
+                          placeholder="Ex: Cardiologia preventiva, oncologia pediátrica, neurologia cognitiva, saúde pública, revisões sistemáticas..."></textarea>
+            </div>
+
+            <div class="info-box">
+                <p><strong>Não tem certeza?</strong> Sem problema! Podemos explorar diferentes áreas juntos. O importante é estar aberto a aprender.</p>
+            </div>
+        </div>
+
+        <!-- ================================================================
+             STEP 9: PROJETOS DE PESQUISA (Parte 3)
+             ================================================================ -->
+        <div id="step9" class="step-content" style="display: none;">
+            <h1>Colaboração em Pesquisa</h1>
+            <p class="step-description">Você gostaria de participar de projetos de pesquisa durante o programa?</p>
+
+            <div class="form-group">
+                <label>Interesse em colaboração</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="research_collab" value="case_reports">
+                        <span>Relatos de caso</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="research_collab" value="systematic_reviews">
+                        <span>Revisões sistemáticas</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="research_collab" value="observational_studies">
+                        <span>Estudos observacionais</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="research_collab" value="clinical_trials">
+                        <span>Ensaios clínicos</span>
+                    </label>
+                    <label class="checkbox-label">
+                        <input type="checkbox" name="research_collab" value="not_interested">
+                        <span>Não tenho interesse no momento</span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="info-box">
+                <p><strong>Oportunidade:</strong> A Ward Academy oferece orientação em projetos de pesquisa. Muitos alunos publicam artigos durante o programa!</p>
+            </div>
+        </div>
+
+        <!-- ================================================================
+             STEP 10: OBSERVERSHIPS
+             ================================================================ -->
+        <div id="step10" class="step-content" style="display: none;">
+            <h1>Observerships e Networking</h1>
+            <p class="step-description">Você já tem contatos nos EUA para observerships ou cartas de recomendação?</p>
+
+            <div class="form-group">
+                <label>Adicione contatos (médicos, professores, instituições)</label>
+                <div class="contact-form">
+                    <input type="text" id="contact_name" placeholder="Nome completo">
+                    <input type="email" id="contact_email" placeholder="Email">
+                    <button type="button" id="addContactBtn" class="btn btn-secondary">
+                        + Adicionar Contato
+                    </button>
+                </div>
+            </div>
+
+            <div id="contactsList" class="contacts-list">
+                <!-- Será preenchido dinamicamente -->
+            </div>
+
+            <div class="info-box">
+                <p><strong>Dica:</strong> Manter uma lista organizada de contatos facilita o planejamento de observerships e pedidos de cartas de recomendação.</p>
+            </div>
+        </div>
+
+        <!-- ================================================================
+             STEP 11: BACKGROUND PESSOAL
+             ================================================================ -->
+        <div id="step11" class="step-content" style="display: none;">
+            <h1>Conte-nos Sobre Você</h1>
+            <p class="step-description">Para finalizar, conte um pouco sobre sua trajetória e objetivos.</p>
+
+            <div class="form-group">
+                <label for="background">Sua história e objetivos</label>
+                <textarea id="background" name="background" rows="8"
+                          placeholder="Fale sobre sua formação, motivações para fazer o USMLE, especialidade desejada, e qualquer outra informação relevante..."></textarea>
+            </div>
+
+            <div class="info-box">
+                <p><strong>Quase lá!</strong> Esta informação nos ajuda a personalizar seu acompanhamento e oferecer o melhor suporte possível.</p>
+            </div>
+        </div>
+
+        <!-- Navigation Buttons -->
+        <div class="nav-buttons">
+            <button type="button" id="backBtn" class="btn btn-secondary">
+                ← VOLTAR
+            </button>
+
+            <button type="button" id="saveLaterBtn" class="btn btn-secondary">
+                CONTINUAR DEPOIS
+            </button>
+
+            <button type="button" id="nextBtn" class="btn btn-primary">
+                PRÓXIMO →
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase-config.js"></script>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
     <script src="js/questionnaire-data.js"></script>
     <script src="js/questionnaire.js"></script>
 </body>

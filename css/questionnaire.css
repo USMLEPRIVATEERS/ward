@@ -1,0 +1,545 @@
+/* ============================================================================
+   QUESTIONNAIRE STYLES
+   Ward Academy - Questionário de Primeiro Acesso
+   ============================================================================ */
+
+/* ============================================================================
+   PROGRESS BAR
+   ============================================================================ */
+.progress-container {
+    background: var(--color-white);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    border-bottom: 2px solid var(--color-gray-light);
+}
+
+.progress-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-gray-dark);
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background: var(--color-gray-light);
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--color-orange) 0%, var(--color-orange-hover) 100%);
+    border-radius: 10px;
+    transition: width 0.4s ease;
+}
+
+/* ============================================================================
+   QUESTIONNAIRE CONTAINER
+   ============================================================================ */
+.questionnaire-page {
+    background: var(--color-gray-light);
+    min-height: 100vh;
+}
+
+.questionnaire-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 40px 20px;
+}
+
+.questionnaire-card {
+    background: var(--color-white);
+    border-radius: 12px;
+    padding: 48px;
+    box-shadow: var(--shadow-md);
+    margin-bottom: 40px;
+}
+
+/* ============================================================================
+   STEP CONTENT
+   ============================================================================ */
+.step-content {
+    animation: fadeIn 0.3s ease-in;
+}
+
+.step-title {
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--color-black);
+    margin-bottom: 32px;
+    padding-bottom: 16px;
+    border-bottom: 3px solid var(--color-orange);
+}
+
+.form-section {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--color-gray-medium);
+}
+
+.form-section h3 {
+    font-size: 20px;
+    font-weight: 600;
+    color: var(--color-black);
+    margin-bottom: 16px;
+}
+
+.section-subtitle {
+    display: block;
+    color: var(--color-gray-dark);
+    font-size: 14px;
+    margin-bottom: 20px;
+}
+
+/* ============================================================================
+   FORM ELEMENTS
+   ============================================================================ */
+.form-group {
+    margin-bottom: 24px;
+}
+
+.form-group label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-black);
+    margin-bottom: 8px;
+}
+
+.form-group input[type="text"],
+.form-group input[type="email"],
+.form-group input[type="date"],
+.form-group input[type="number"],
+.form-group select,
+.form-group textarea {
+    width: 100%;
+    padding: 12px 16px;
+    font-size: 16px;
+    border: 2px solid var(--color-gray-medium);
+    border-radius: 8px;
+    background: var(--color-white);
+    color: var(--color-black);
+    transition: var(--transition);
+    font-family: inherit;
+}
+
+.form-group input:focus,
+.form-group select:focus,
+.form-group textarea:focus {
+    outline: none;
+    border-color: var(--color-orange);
+    box-shadow: 0 0 0 3px var(--color-orange-light);
+}
+
+.form-group small {
+    display: block;
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--color-gray-dark);
+}
+
+.form-group textarea {
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Form Row (2 columns) */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ============================================================================
+   RADIO & CHECKBOX GROUPS
+   ============================================================================ */
+.radio-group,
+.checkbox-group {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.radio-label,
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    border: 2px solid var(--color-gray-medium);
+    border-radius: 8px;
+    cursor: pointer;
+    transition: var(--transition);
+    background: var(--color-white);
+}
+
+.radio-label:hover,
+.checkbox-label:hover {
+    border-color: var(--color-orange);
+    background: var(--color-orange-light);
+}
+
+.radio-label input[type="radio"],
+.checkbox-label input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    margin-right: 12px;
+    cursor: pointer;
+    accent-color: var(--color-orange);
+}
+
+.radio-label input[type="radio"]:checked + span,
+.checkbox-label input[type="checkbox"]:checked + span {
+    font-weight: 600;
+    color: var(--color-orange);
+}
+
+.radio-label input[type="radio"]:checked,
+.checkbox-label input[type="checkbox"]:checked {
+    transform: scale(1.1);
+}
+
+/* ============================================================================
+   SLIDERS (Range Inputs)
+   ============================================================================ */
+.slider-group {
+    margin-bottom: 28px;
+}
+
+.slider-group label {
+    display: block;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--color-black);
+    margin-bottom: 12px;
+}
+
+.slider-group label span {
+    color: var(--color-orange);
+}
+
+.slider-group input[type="range"] {
+    width: 100%;
+    height: 8px;
+    border-radius: 5px;
+    background: var(--color-gray-light);
+    outline: none;
+    -webkit-appearance: none;
+    margin: 12px 0;
+}
+
+.slider-group input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-orange);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    transition: var(--transition);
+}
+
+.slider-group input[type="range"]::-webkit-slider-thumb:hover {
+    background: var(--color-orange-hover);
+    transform: scale(1.15);
+    box-shadow: var(--shadow-md);
+}
+
+.slider-group input[type="range"]::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: var(--color-orange);
+    cursor: pointer;
+    box-shadow: var(--shadow-sm);
+    border: none;
+    transition: var(--transition);
+}
+
+.slider-group input[type="range"]::-moz-range-thumb:hover {
+    background: var(--color-orange-hover);
+    transform: scale(1.15);
+}
+
+.slider-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: var(--color-gray-dark);
+    margin-top: 4px;
+}
+
+/* ============================================================================
+   CONDITIONAL SECTIONS
+   ============================================================================ */
+.conditional,
+.conditional-section {
+    animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+    }
+    to {
+        opacity: 1;
+        max-height: 1000px;
+    }
+}
+
+/* ============================================================================
+   NAVIGATION BUTTONS
+   ============================================================================ */
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 40px;
+    padding-top: 32px;
+    border-top: 2px solid var(--color-gray-light);
+}
+
+.navigation-buttons .btn {
+    padding: 14px 32px;
+    font-size: 16px;
+    font-weight: 600;
+}
+
+@media (max-width: 768px) {
+    .navigation-buttons {
+        flex-direction: column;
+    }
+
+    .navigation-buttons .btn {
+        width: 100%;
+    }
+}
+
+/* ============================================================================
+   AUTO-SAVE INDICATOR
+   ============================================================================ */
+.autosave-indicator {
+    text-align: center;
+    padding: 12px;
+    margin-top: 20px;
+    font-size: 14px;
+    color: var(--color-gray-dark);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.spinner-small {
+    width: 16px;
+    height: 16px;
+    border: 2px solid var(--color-gray-light);
+    border-top-color: var(--color-orange);
+    border-radius: 50%;
+    animation: spin 0.6s linear infinite;
+}
+
+.autosave-indicator.success {
+    color: var(--color-success);
+}
+
+.autosave-indicator.error {
+    color: var(--color-danger);
+}
+
+/* ============================================================================
+   SYSTEMS & CATEGORIES (Step 4)
+   ============================================================================ */
+.system-group {
+    margin-bottom: 24px;
+    border: 1px solid var(--color-gray-medium);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.system-header {
+    padding: 16px 20px;
+    background: var(--color-gray-light);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.system-header:hover {
+    background: var(--color-orange-light);
+}
+
+.system-header.expanded {
+    background: var(--color-orange);
+    color: var(--color-white);
+}
+
+.system-categories {
+    padding: 16px 20px;
+    background: var(--color-white);
+    display: none;
+}
+
+.system-categories.visible {
+    display: block;
+}
+
+.category-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-gray-light);
+}
+
+.category-item:last-child {
+    border-bottom: none;
+}
+
+.category-checkbox {
+    margin-right: 12px;
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+    accent-color: var(--color-orange);
+}
+
+.difficulty-btn {
+    margin-left: auto;
+    padding: 6px 12px;
+    font-size: 12px;
+    background: transparent;
+    border: 1px solid var(--color-warning);
+    color: var(--color-warning);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.difficulty-btn:hover {
+    background: var(--color-warning);
+    color: var(--color-white);
+}
+
+.difficulty-btn.active {
+    background: var(--color-warning);
+    color: var(--color-white);
+}
+
+.difficulty-notes {
+    margin-top: 8px;
+    width: 100%;
+}
+
+.difficulty-notes textarea {
+    width: 100%;
+    min-height: 60px;
+    padding: 8px;
+    border: 1px solid var(--color-warning);
+    border-radius: 4px;
+    font-size: 13px;
+}
+
+/* ============================================================================
+   CONTACT LIST (Research Contacts)
+   ============================================================================ */
+.contact-list {
+    margin-top: 20px;
+}
+
+.contact-item {
+    border: 1px solid var(--color-gray-medium);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    position: relative;
+}
+
+.contact-header {
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: var(--color-orange);
+}
+
+.remove-contact {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    background: var(--color-danger);
+    color: var(--color-white);
+    border: none;
+    border-radius: 50%;
+    width: 28px;
+    height: 28px;
+    cursor: pointer;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+}
+
+.remove-contact:hover {
+    transform: scale(1.1);
+    box-shadow: var(--shadow-sm);
+}
+
+.btn-add {
+    background: transparent;
+    border: 2px dashed var(--color-orange);
+    color: var(--color-orange);
+    padding: 12px 24px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: var(--transition);
+}
+
+.btn-add:hover {
+    background: var(--color-orange-light);
+}
+
+/* ============================================================================
+   RESPONSIVE
+   ============================================================================ */
+@media (max-width: 768px) {
+    .questionnaire-card {
+        padding: 32px 24px;
+    }
+
+    .step-title {
+        font-size: 24px;
+    }
+
+    .progress-container {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 480px) {
+    .questionnaire-card {
+        padding: 24px 16px;
+    }
+
+    .step-title {
+        font-size: 20px;
+    }
+}
