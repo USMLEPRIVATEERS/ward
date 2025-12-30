@@ -98,11 +98,17 @@ ward/
 - **Mentor_Guilherme**: Guilherme (foco em Anki)
 - **Mentor_Romulo**: Rômulo (foco em pesquisa)
 
-## 🔧 Credenciais Padrão
+## 🔧 Credenciais dos Mentores
 
-**Marcos (Admin)**:
-- Email: marcosantoniodv@gmail.com
-- Senha: Luna11anos (configure no Supabase)
+As credenciais dos mentores são criadas automaticamente ao executar o arquivo `supabase_schema.sql`.
+
+Os emails registrados são:
+- **Marcos Vilela (Admin)**: marcosantoniodv@gmail.com
+- **Dra. Iria da Costa**: costamdiria@gmail.com
+- **Guilherme Lavor**: guilhermelavor@yahoo.com.br
+- **Rômulo Sanglard**: romulossanglard@gmail.com
+
+**Nota**: As senhas iniciais estão definidas no schema SQL. Todos os mentores podem alterar suas senhas no dashboard após o primeiro login.
 
 ## 📝 Status do Projeto
 

@@ -474,9 +474,19 @@ INSERT INTO public.default_landmarks (landmark_type, mentor_name, call_number, t
 -- INITIAL USERS - Mentors
 -- ============================================
 
--- Insert mentors (passwords should be hashed in production)
-INSERT INTO public.users (email, password_hash, user_type, first_login) VALUES
-('marcosantoniodv@gmail.com', '$2a$10$XQz9Z9Z9Z9Z9Z9Z9Z9Z9ZO', 'mentor_marcos', FALSE); -- Password: Luna11anos (needs to be properly hashed)
+-- IMPORTANT: In production, use bcrypt or argon2 to hash passwords!
+-- These passwords are stored in plain text for initial setup only.
+-- Mentors can change their passwords in the dashboard.
 
--- Note: Other mentors should be added with their credentials
--- In production, use proper password hashing like bcrypt
+INSERT INTO public.users (email, password_hash, user_type, first_login) VALUES
+('marcosantoniodv@gmail.com', 'Luna11anos', 'mentor_marcos', FALSE),
+('costamdiria@gmail.com', 'Iria2026.', 'mentor_iria', FALSE),
+('guilhermelavor@yahoo.com.br', 'Gui2026.', 'mentor_guilherme', FALSE),
+('romulossanglard@gmail.com', 'Romulo2026.', 'mentor_romulo', FALSE);
+
+-- Create profiles for mentors
+INSERT INTO public.user_profiles (user_id, full_name) VALUES
+((SELECT id FROM public.users WHERE email = 'marcosantoniodv@gmail.com'), 'Marcos Vilela'),
+((SELECT id FROM public.users WHERE email = 'costamdiria@gmail.com'), 'Dra. Iria da Costa'),
+((SELECT id FROM public.users WHERE email = 'guilhermelavor@yahoo.com.br'), 'Guilherme Lavor'),
+((SELECT id FROM public.users WHERE email = 'romulossanglard@gmail.com'), 'Rômulo Sanglard');
