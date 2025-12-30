@@ -13,13 +13,13 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 // Note: Include the Supabase JavaScript library in your HTML:
 // <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
-let supabase;
+let supabaseClient;
 
 function initSupabase() {
-    if (typeof supabase === 'undefined') {
-        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    if (!supabaseClient) {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
     }
-    return supabase;
+    return supabaseClient;
 }
 
 // ============================================
@@ -28,10 +28,10 @@ function initSupabase() {
 
 async function login(email, password) {
     try {
-        const supabase = initSupabase();
+        const sb = initSupabase();
 
         // Query custom users table
-        const { data, error } = await supabase
+        const { data, error } = await sb
             .from('users')
             .select('*, user_profiles(*)')
             .eq('email', email)
@@ -99,8 +99,8 @@ function isStudent() {
 
 async function getUserProfile(userId) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('user_profiles')
             .select('*')
             .eq('user_id', userId)
@@ -116,8 +116,8 @@ async function getUserProfile(userId) {
 
 async function updateUserProfile(userId, profileData) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('user_profiles')
             .upsert({ user_id: userId, ...profileData, updated_at: new Date() })
             .select();
@@ -132,9 +132,9 @@ async function updateUserProfile(userId, profileData) {
 
 async function changePassword(userId, oldPassword, newPassword) {
     try {
-        const supabase = initSupabase();
+        const sb = initSupabase();
         // In production, verify old password and hash new password
-        const { data, error } = await supabase
+        const { data, error } = await sb
             .from('users')
             .update({ password_hash: newPassword, updated_at: new Date() })
             .eq('id', userId);
@@ -153,8 +153,8 @@ async function changePassword(userId, oldPassword, newPassword) {
 
 async function getQuestionnaireProgress(userId) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('questionnaire_progress')
             .select('*')
             .eq('user_id', userId)
@@ -170,8 +170,8 @@ async function getQuestionnaireProgress(userId) {
 
 async function saveQuestionnaireProgress(userId, pageNumber, completed = false) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('questionnaire_progress')
             .upsert({
                 user_id: userId,
@@ -192,8 +192,8 @@ async function saveQuestionnaireProgress(userId, pageNumber, completed = false) 
 // Save specific questionnaire data
 async function saveUSMLEInfo(userId, data) {
     try {
-        const supabase = initSupabase();
-        const { data: result, error } = await supabase
+        const sb = initSupabase();
+        const { data: result, error } = await sb
             .from('usmle_info')
             .upsert({ user_id: userId, ...data, updated_at: new Date() })
             .select();
@@ -207,8 +207,8 @@ async function saveUSMLEInfo(userId, data) {
 
 async function saveUWorldInfo(userId, data) {
     try {
-        const supabase = initSupabase();
-        const { data: result, error } = await supabase
+        const sb = initSupabase();
+        const { data: result, error } = await sb
             .from('uworld_info')
             .upsert({ user_id: userId, ...data, updated_at: new Date() })
             .select();
@@ -222,8 +222,8 @@ async function saveUWorldInfo(userId, data) {
 
 async function saveEnglishProficiency(userId, data) {
     try {
-        const supabase = initSupabase();
-        const { data: result, error } = await supabase
+        const sb = initSupabase();
+        const { data: result, error } = await sb
             .from('english_proficiency')
             .upsert({ user_id: userId, ...data, updated_at: new Date() })
             .select();
@@ -237,8 +237,8 @@ async function saveEnglishProficiency(userId, data) {
 
 async function saveAnkiInfo(userId, data) {
     try {
-        const supabase = initSupabase();
-        const { data: result, error } = await supabase
+        const sb = initSupabase();
+        const { data: result, error } = await sb
             .from('anki_info')
             .upsert({ user_id: userId, ...data, updated_at: new Date() })
             .select();
@@ -252,8 +252,8 @@ async function saveAnkiInfo(userId, data) {
 
 async function saveResearchExperience(userId, data) {
     try {
-        const supabase = initSupabase();
-        const { data: result, error } = await supabase
+        const sb = initSupabase();
+        const { data: result, error } = await sb
             .from('research_experience')
             .upsert({ user_id: userId, ...data, updated_at: new Date() })
             .select();
@@ -267,8 +267,8 @@ async function saveResearchExperience(userId, data) {
 
 async function savePersonalBackground(userId, data) {
     try {
-        const supabase = initSupabase();
-        const { data: result, error } = await supabase
+        const sb = initSupabase();
+        const { data: result, error } = await sb
             .from('personal_background')
             .upsert({ user_id: userId, ...data, updated_at: new Date() })
             .select();
@@ -286,8 +286,8 @@ async function savePersonalBackground(userId, data) {
 
 async function saveDailyUpdate(userId, text, status) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('daily_updates')
             .insert({
                 user_id: userId,
@@ -305,8 +305,8 @@ async function saveDailyUpdate(userId, text, status) {
 
 async function getDailyUpdates(userId, limit = 10) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('daily_updates')
             .select('*')
             .eq('user_id', userId)
@@ -326,8 +326,8 @@ async function getDailyUpdates(userId, limit = 10) {
 
 async function saveStudyDiaryEntry(userId, date, text) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('study_diary')
             .upsert({
                 user_id: userId,
@@ -346,8 +346,8 @@ async function saveStudyDiaryEntry(userId, date, text) {
 
 async function getStudyDiaryEntries(userId, limit = 30) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('study_diary')
             .select('*')
             .eq('user_id', userId)
@@ -363,8 +363,8 @@ async function getStudyDiaryEntries(userId, limit = 30) {
 
 async function deleteStudyDiaryEntry(entryId) {
     try {
-        const supabase = initSupabase();
-        const { error } = await supabase
+        const sb = initSupabase();
+        const { error } = await sb
             .from('study_diary')
             .delete()
             .eq('id', entryId);
@@ -378,8 +378,8 @@ async function deleteStudyDiaryEntry(entryId) {
 
 async function saveUWorldDiaryEntry(userId, entryData) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('uworld_diary')
             .insert({
                 user_id: userId,
@@ -397,8 +397,8 @@ async function saveUWorldDiaryEntry(userId, entryData) {
 
 async function getUWorldDiaryEntries(userId, limit = 30) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('uworld_diary')
             .select('*')
             .eq('user_id', userId)
@@ -418,8 +418,8 @@ async function getUWorldDiaryEntries(userId, limit = 30) {
 
 async function getLandmarks(userId) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('landmarks')
             .select('*')
             .eq('user_id', userId)
@@ -434,8 +434,8 @@ async function getLandmarks(userId) {
 
 async function updateLandmark(landmarkId, updates) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('landmarks')
             .update({ ...updates, updated_at: new Date() })
             .eq('id', landmarkId)
@@ -450,8 +450,8 @@ async function updateLandmark(landmarkId, updates) {
 
 async function createLandmark(userId, landmarkData) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('landmarks')
             .insert({
                 user_id: userId,
@@ -472,8 +472,8 @@ async function createLandmark(userId, landmarkData) {
 
 async function getSchedule(userId) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('schedules')
             .select('*')
             .eq('user_id', userId)
@@ -488,16 +488,16 @@ async function getSchedule(userId) {
 
 async function importSchedule(userId, scheduleData) {
     try {
-        const supabase = initSupabase();
+        const sb = initSupabase();
 
         // Delete existing schedule
-        await supabase
+        await sb
             .from('schedules')
             .delete()
             .eq('user_id', userId);
 
         // Insert new schedule
-        const { data, error } = await supabase
+        const { data, error } = await sb
             .from('schedules')
             .insert(scheduleData.map(item => ({ user_id: userId, ...item })))
             .select();
@@ -511,8 +511,8 @@ async function importSchedule(userId, scheduleData) {
 
 async function updateScheduleItem(itemId, completed) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('schedules')
             .update({ completed, updated_at: new Date() })
             .eq('id', itemId)
@@ -527,8 +527,8 @@ async function updateScheduleItem(itemId, completed) {
 
 async function reportDelay(userId, startDate, endDate, reason) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('schedule_delays')
             .insert({
                 user_id: userId,
@@ -551,8 +551,8 @@ async function reportDelay(userId, startDate, endDate, reason) {
 
 async function getLinks(category = null) {
     try {
-        const supabase = initSupabase();
-        let query = supabase
+        const sb = initSupabase();
+        let query = sb
             .from('links')
             .select('*')
             .order('created_at', { ascending: false });
@@ -572,8 +572,8 @@ async function getLinks(category = null) {
 
 async function addLink(userId, linkData) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('links')
             .insert({
                 added_by: userId,
@@ -594,8 +594,8 @@ async function addLink(userId, linkData) {
 
 async function getBlogPosts(limit = 50) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('blog_posts')
             .select(`
                 *,
@@ -614,8 +614,8 @@ async function getBlogPosts(limit = 50) {
 
 async function createBlogPost(userId, content) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('blog_posts')
             .insert({
                 author_id: userId,
@@ -632,8 +632,8 @@ async function createBlogPost(userId, content) {
 
 async function likeBlogPost(userId, postId, isLike) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('blog_likes')
             .upsert({
                 user_id: userId,
@@ -651,7 +651,7 @@ async function likeBlogPost(userId, postId, isLike) {
 
 async function pinBlogPost(postId, duration) {
     try {
-        const supabase = initSupabase();
+        const sb = initSupabase();
         let pinnedUntil = null;
 
         if (duration === '1week') {
@@ -662,7 +662,7 @@ async function pinBlogPost(postId, duration) {
             pinnedUntil = new Date('2099-12-31');
         }
 
-        const { data, error } = await supabase
+        const { data, error } = await sb
             .from('blog_posts')
             .update({
                 is_pinned: true,
@@ -685,10 +685,10 @@ async function pinBlogPost(postId, duration) {
 
 async function getResearchProjects(userId = null) {
     try {
-        const supabase = initSupabase();
+        const sb = initSupabase();
         const userType = getUserType();
 
-        let query = supabase
+        let query = sb
             .from('research_projects')
             .select(`
                 *,
@@ -715,8 +715,8 @@ async function getResearchProjects(userId = null) {
 
 async function createResearchProject(userId, projectData) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('research_projects')
             .insert({
                 created_by: userId,
@@ -733,8 +733,8 @@ async function createResearchProject(userId, projectData) {
 
 async function updateResearchProject(projectId, updates) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('research_projects')
             .update({ ...updates, updated_at: new Date() })
             .eq('id', projectId)
@@ -749,13 +749,13 @@ async function updateResearchProject(projectId, updates) {
 
 async function addResearchAuthors(projectId, userIds) {
     try {
-        const supabase = initSupabase();
+        const sb = initSupabase();
         const authors = userIds.map(userId => ({
             project_id: projectId,
             user_id: userId
         }));
 
-        const { data, error } = await supabase
+        const { data, error } = await sb
             .from('research_authors')
             .insert(authors)
             .select();
@@ -773,8 +773,8 @@ async function addResearchAuthors(projectId, userIds) {
 
 async function getMessages(userId) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('messages')
             .select(`
                 *,
@@ -792,8 +792,8 @@ async function getMessages(userId) {
 
 async function markMessageAsRead(messageId) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('messages')
             .update({ is_read: true })
             .eq('id', messageId)
@@ -808,8 +808,8 @@ async function markMessageAsRead(messageId) {
 
 async function deleteMessage(messageId) {
     try {
-        const supabase = initSupabase();
-        const { error } = await supabase
+        const sb = initSupabase();
+        const { error } = await sb
             .from('messages')
             .delete()
             .eq('id', messageId);
@@ -827,8 +827,8 @@ async function deleteMessage(messageId) {
 
 async function getAllUsers() {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('users')
             .select('*, user_profiles(*)')
             .order('created_at', { ascending: false });
@@ -842,8 +842,8 @@ async function getAllUsers() {
 
 async function createUser(email, password, userType) {
     try {
-        const supabase = initSupabase();
-        const { data, error } = await supabase
+        const sb = initSupabase();
+        const { data, error } = await sb
             .from('users')
             .insert({
                 email: email,
@@ -861,8 +861,8 @@ async function createUser(email, password, userType) {
 
 async function deleteUser(userId) {
     try {
-        const supabase = initSupabase();
-        const { error } = await supabase
+        const sb = initSupabase();
+        const { error } = await sb
             .from('users')
             .delete()
             .eq('id', userId);
