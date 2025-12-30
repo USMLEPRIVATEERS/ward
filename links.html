@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ward Academy - Repositório de Links</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1>Ward Academy</h1>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="links.html" class="active">Links</a>
+                <a href="blog.html">Blog</a>
+                <a href="research.html">Pesquisa</a>
+                <a href="#" id="logoutBtn">Sair</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <h2>Repositório de Links</h2>
+            <button class="btn btn-primary" id="addLinkBtn">Adicionar Link</button>
+        </div>
+
+        <!-- Filters -->
+        <div class="filters-section">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Buscar links...">
+            </div>
+            <div class="filter-buttons">
+                <button class="filter-btn active" data-category="all">Todos</button>
+                <button class="filter-btn" data-category="step1">Step 1</button>
+                <button class="filter-btn" data-category="step2ck">Step 2 CK</button>
+                <button class="filter-btn" data-category="step3">Step 3</button>
+                <button class="filter-btn" data-category="oet">OET</button>
+                <button class="filter-btn" data-category="research">Pesquisa</button>
+            </div>
+        </div>
+
+        <!-- Links Container -->
+        <div id="linksContainer" class="links-container">
+            <!-- Links will be loaded here -->
+        </div>
+    </main>
+
+    <!-- Add/Edit Link Modal -->
+    <div id="linkModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 id="modalTitle">Adicionar Link</h3>
+            <form id="linkForm">
+                <div class="form-group">
+                    <label for="linkTitle">Título *</label>
+                    <input type="text" id="linkTitle" required>
+                </div>
+                <div class="form-group">
+                    <label for="linkUrl">URL *</label>
+                    <input type="url" id="linkUrl" required placeholder="https://">
+                </div>
+                <div class="form-group">
+                    <label for="linkDescription">Descrição</label>
+                    <textarea id="linkDescription" rows="3"></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="linkCategory">Categoria *</label>
+                    <select id="linkCategory" required>
+                        <option value="">Selecione...</option>
+                        <option value="step1">Step 1</option>
+                        <option value="step2ck">Step 2 CK</option>
+                        <option value="step3">Step 3</option>
+                        <option value="oet">OET</option>
+                        <option value="research">Pesquisa</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script>
+        let currentLinkId = null;
+        let currentFilter = 'all';
+        let searchTerm = '';
+
+        // Check authentication
+        const currentUser = getCurrentUser();
+        if (!currentUser) {
+            window.location.href = 'index.html';
+        }
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            logout();
+            window.location.href = 'index.html';
+        });
+
+        // Modal controls
+        const modal = document.getElementById('linkModal');
+        const addLinkBtn = document.getElementById('addLinkBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const closeBtn = document.querySelector('.close');
+
+        addLinkBtn.addEventListener('click', () => {
+            currentLinkId = null;
+            document.getElementById('modalTitle').textContent = 'Adicionar Link';
+            document.getElementById('linkForm').reset();
+            modal.classList.remove('hidden');
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+
+        closeBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+
+        // Filter buttons
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.category;
+                loadLinks();
+            });
+        });
+
+        // Search
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchTerm = e.target.value.toLowerCase();
+            loadLinks();
+        });
+
+        // Form submission
+        document.getElementById('linkForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const linkData = {
+                title: document.getElementById('linkTitle').value,
+                url: document.getElementById('linkUrl').value,
+                description: document.getElementById('linkDescription').value,
+                category: document.getElementById('linkCategory').value,
+                added_by: currentUser.id
+            };
+
+            try {
+                if (currentLinkId) {
+                    await updateLink(currentLinkId, linkData);
+                } else {
+                    await createLink(linkData);
+                }
+                modal.classList.add('hidden');
+                loadLinks();
+            } catch (error) {
+                console.error('Error saving link:', error);
+                alert('Erro ao salvar link. Tente novamente.');
+            }
+        });
+
+        // Load and display links
+        async function loadLinks() {
+            try {
+                const links = await getLinks();
+                displayLinks(links);
+            } catch (error) {
+                console.error('Error loading links:', error);
+                document.getElementById('linksContainer').innerHTML = '<p class="error-message">Erro ao carregar links.</p>';
+            }
+        }
+
+        function displayLinks(links) {
+            const container = document.getElementById('linksContainer');
+
+            // Filter by category
+            let filteredLinks = currentFilter === 'all'
+                ? links
+                : links.filter(link => link.category === currentFilter);
+
+            // Filter by search term
+            if (searchTerm) {
+                filteredLinks = filteredLinks.filter(link =>
+                    link.title.toLowerCase().includes(searchTerm) ||
+                    (link.description && link.description.toLowerCase().includes(searchTerm)) ||
+                    link.url.toLowerCase().includes(searchTerm)
+                );
+            }
+
+            if (filteredLinks.length === 0) {
+                container.innerHTML = '<p class="no-data">Nenhum link encontrado.</p>';
+                return;
+            }
+
+            const categoryLabels = {
+                step1: 'Step 1',
+                step2ck: 'Step 2 CK',
+                step3: 'Step 3',
+                oet: 'OET',
+                research: 'Pesquisa'
+            };
+
+            container.innerHTML = filteredLinks.map(link => `
+                <div class="link-card">
+                    <div class="link-header">
+                        <h3><a href="${link.url}" target="_blank" rel="noopener noreferrer">${link.title}</a></h3>
+                        <span class="link-category badge-${link.category}">${categoryLabels[link.category] || link.category}</span>
+                    </div>
+                    ${link.description ? `<p class="link-description">${link.description}</p>` : ''}
+                    <div class="link-footer">
+                        <a href="${link.url}" target="_blank" rel="noopener noreferrer" class="link-url">${link.url}</a>
+                        <div class="link-actions">
+                            <button class="btn-icon edit-link" data-id="${link.id}" title="Editar">✏️</button>
+                            <button class="btn-icon delete-link" data-id="${link.id}" title="Excluir">🗑️</button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Add event listeners
+            document.querySelectorAll('.edit-link').forEach(btn => {
+                btn.addEventListener('click', () => editLink(btn.dataset.id));
+            });
+
+            document.querySelectorAll('.delete-link').forEach(btn => {
+                btn.addEventListener('click', () => deleteLink(btn.dataset.id));
+            });
+        }
+
+        async function editLink(linkId) {
+            try {
+                const sb = initSupabase();
+                const { data, error } = await sb
+                    .from('links')
+                    .select('*')
+                    .eq('id', linkId)
+                    .single();
+
+                if (error) throw error;
+
+                currentLinkId = linkId;
+                document.getElementById('modalTitle').textContent = 'Editar Link';
+                document.getElementById('linkTitle').value = data.title;
+                document.getElementById('linkUrl').value = data.url;
+                document.getElementById('linkDescription').value = data.description || '';
+                document.getElementById('linkCategory').value = data.category;
+                modal.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error loading link:', error);
+                alert('Erro ao carregar link.');
+            }
+        }
+
+        async function deleteLink(linkId) {
+            if (!confirm('Tem certeza que deseja excluir este link?')) return;
+
+            try {
+                const sb = initSupabase();
+                const { error } = await sb
+                    .from('links')
+                    .delete()
+                    .eq('id', linkId);
+
+                if (error) throw error;
+                loadLinks();
+            } catch (error) {
+                console.error('Error deleting link:', error);
+                alert('Erro ao excluir link.');
+            }
+        }
+
+        // Initial load
+        loadLinks();
+    </script>
+
+    <style>
+        .filters-section {
+            background: var(--color-light-gray);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+
+        .search-bar {
+            margin-bottom: 15px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            font-size: 16px;
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            padding: 8px 16px;
+            border: 1px solid var(--color-border);
+            background: white;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-btn:hover {
+            background: var(--color-light-gray);
+        }
+
+        .filter-btn.active {
+            background: var(--color-primary);
+            color: white;
+            border-color: var(--color-primary);
+        }
+
+        .links-container {
+            display: grid;
+            gap: 20px;
+        }
+
+        .link-card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 20px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .link-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .link-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .link-header h3 {
+            margin: 0;
+            font-size: 18px;
+        }
+
+        .link-header h3 a {
+            color: var(--color-primary);
+            text-decoration: none;
+        }
+
+        .link-header h3 a:hover {
+            text-decoration: underline;
+        }
+
+        .link-category {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        .badge-step1 { background: #e3f2fd; color: #1976d2; }
+        .badge-step2ck { background: #f3e5f5; color: #7b1fa2; }
+        .badge-step3 { background: #e8f5e9; color: #388e3c; }
+        .badge-oet { background: #fff3e0; color: #f57c00; }
+        .badge-research { background: #fce4ec; color: #c2185b; }
+
+        .link-description {
+            color: #666;
+            margin: 10px 0;
+        }
+
+        .link-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .link-url {
+            color: #888;
+            font-size: 14px;
+            text-decoration: none;
+            word-break: break-all;
+            flex: 1;
+        }
+
+        .link-actions {
+            display: flex;
+            gap: 10px;
+            margin-left: 15px;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-icon:hover {
+            transform: scale(1.2);
+        }
+    </style>
+</body>
+</html>

@@ -1,0 +1,859 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ward Academy - Pesquisa</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1>Ward Academy</h1>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="links.html">Links</a>
+                <a href="blog.html">Blog</a>
+                <a href="research.html" class="active">Pesquisa</a>
+                <a href="#" id="logoutBtn">Sair</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <h2>Projetos de Pesquisa</h2>
+            <button class="btn btn-primary" id="newProjectBtn">Novo Projeto</button>
+        </div>
+
+        <!-- Projects Container -->
+        <div id="projectsContainer" class="projects-container">
+            <!-- Projects will be loaded here -->
+        </div>
+    </main>
+
+    <!-- New Project Modal -->
+    <div id="projectModal" class="modal hidden">
+        <div class="modal-content modal-large">
+            <span class="close">&times;</span>
+            <h3 id="modalTitle">Novo Projeto de Pesquisa</h3>
+            <form id="projectForm">
+                <div class="form-group">
+                    <label for="metaAnalysisType">Tipo de Meta-análise *</label>
+                    <select id="metaAnalysisType" required>
+                        <option value="">Selecione...</option>
+                        <option value="single_arm">Single Arm</option>
+                        <option value="double_arm">Double Arm</option>
+                        <option value="network">Network</option>
+                        <option value="none">Sem Meta-análise</option>
+                    </select>
+                </div>
+
+                <div id="titleFields">
+                    <!-- Title fields will be dynamically generated -->
+                </div>
+
+                <div class="form-group">
+                    <label for="currentStage">Etapa Atual</label>
+                    <select id="currentStage">
+                        <option value="NOVA TAREFA">NOVA TAREFA</option>
+                        <option value="TESTANDO IDEIA">TESTANDO IDEIA</option>
+                        <option value="ENCONTRANDO ESTUDOS">ENCONTRANDO ESTUDOS</option>
+                        <option value="ESTRATEGIA DE BUSCA">ESTRATEGIA DE BUSCA</option>
+                        <option value="VALIDANDO IDEIA">VALIDANDO IDEIA</option>
+                        <option value="ESCREVER PROTOCOLO">ESCREVER PROTOCOLO</option>
+                        <option value="EXPORTAR DE DATABASES">EXPORTAR DE DATABASES</option>
+                        <option value="DESDUPLICAR">DESDUPLICAR</option>
+                        <option value="REVISORES 1 E 2">REVISORES 1 E 2</option>
+                        <option value="REVISOR 3">REVISOR 3</option>
+                        <option value="BAIXANDO PDFs">BAIXANDO PDFs</option>
+                        <option value="LEITURA COMPLETA">LEITURA COMPLETA</option>
+                        <option value="PRISMA FLOW DIAGRAM">PRISMA FLOW DIAGRAM</option>
+                        <option value="TABELA PICO">TABELA PICO</option>
+                        <option value="EXTRAÇAO DE DADOS">EXTRAÇAO DE DADOS</option>
+                        <option value="ANALISE ESTATISTICA PADRAO">ANALISE ESTATISTICA PADRAO</option>
+                        <option value="ANALISES ESTATISTICAS ADICIONAIS">ANALISES ESTATISTICAS ADICIONAIS</option>
+                        <option value="RISCO DE VIES REVISORES 1 E 2">RISCO DE VIES REVISORES 1 E 2</option>
+                        <option value="RISCO DE VIES REVISOR 3">RISCO DE VIES REVISOR 3</option>
+                        <option value="GRAFICOS DE DESFECHOS">GRAFICOS DE DESFECHOS</option>
+                        <option value="GRAFICOS DE VIESES">GRAFICOS DE VIESES</option>
+                        <option value="GRADE">GRADE</option>
+                        <option value="SUBMETER AO PROSPERO">SUBMETER AO PROSPERO</option>
+                        <option value="ESCREVER ABSTRACT">ESCREVER ABSTRACT</option>
+                        <option value="SUBMETER PARA CONGRESSO">SUBMETER PARA CONGRESSO</option>
+                        <option value="ESCREVER INTRODUCTION">ESCREVER INTRODUCTION</option>
+                        <option value="ESCREVER METHODS">ESCREVER METHODS</option>
+                        <option value="ESCREVER RESULTS">ESCREVER RESULTS</option>
+                        <option value="ESCREVER DISCUSSION">ESCREVER DISCUSSION</option>
+                        <option value="ESCREVER CONCLUSION">ESCREVER CONCLUSION</option>
+                        <option value="ESCREVER LIMITATIONS">ESCREVER LIMITATIONS</option>
+                        <option value="ESCREVER REFERENCES">ESCREVER REFERENCES</option>
+                        <option value="ENCONTRAR REVISTAS">ENCONTRAR REVISTAS</option>
+                        <option value="ESCREVER COVER LETTER">ESCREVER COVER LETTER</option>
+                        <option value="SUBMETER PARA REVISTA">SUBMETER PARA REVISTA</option>
+                        <option value="RESPONDER REVISORES">RESPONDER REVISORES</option>
+                        <option value="ESCREVER REBUTTAL LETTER">ESCREVER REBUTTAL LETTER</option>
+                        <option value="ULTIMOS AJUSTES">ULTIMOS AJUSTES</option>
+                        <option value="TAREFA CONCLUÍDA">TAREFA CONCLUÍDA</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="deadline">Deadline</label>
+                    <input type="date" id="deadline">
+                </div>
+
+                <div class="form-group">
+                    <label for="driveLink">Link do Google Drive</label>
+                    <input type="url" id="driveLink" placeholder="https://drive.google.com/...">
+                </div>
+
+                <div class="form-group">
+                    <label for="comments">Comentários</label>
+                    <textarea id="comments" rows="4"></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Co-authors Modal (for mentors only) -->
+    <div id="authorsModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close close-authors">&times;</span>
+            <h3>Adicionar Coautores</h3>
+            <div id="studentsList" class="students-list">
+                <!-- Students checkboxes will be loaded here -->
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary close-authors">Cancelar</button>
+                <button type="button" class="btn btn-primary" id="saveAuthorsBtn">Salvar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stages Modal -->
+    <div id="stagesModal" class="modal hidden">
+        <div class="modal-content modal-large">
+            <span class="close close-stages">&times;</span>
+            <h3>Etapas do Projeto</h3>
+            <div id="stagesList" class="stages-list">
+                <!-- Stages will be loaded here -->
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary close-stages">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script>
+        const RESEARCH_STAGES = [
+            "NOVA TAREFA", "TESTANDO IDEIA", "ENCONTRANDO ESTUDOS", "ESTRATEGIA DE BUSCA",
+            "VALIDANDO IDEIA", "ESCREVER PROTOCOLO", "EXPORTAR DE DATABASES", "DESDUPLICAR",
+            "REVISORES 1 E 2", "REVISOR 3", "BAIXANDO PDFs", "LEITURA COMPLETA",
+            "PRISMA FLOW DIAGRAM", "TABELA PICO", "EXTRAÇAO DE DADOS", "ANALISE ESTATISTICA PADRAO",
+            "ANALISES ESTATISTICAS ADICIONAIS", "RISCO DE VIES REVISORES 1 E 2", "RISCO DE VIES REVISOR 3",
+            "GRAFICOS DE DESFECHOS", "GRAFICOS DE VIESES", "GRADE", "SUBMETER AO PROSPERO",
+            "ESCREVER ABSTRACT", "SUBMETER PARA CONGRESSO", "ESCREVER INTRODUCTION", "ESCREVER METHODS",
+            "ESCREVER RESULTS", "ESCREVER DISCUSSION", "ESCREVER CONCLUSION", "ESCREVER LIMITATIONS",
+            "ESCREVER REFERENCES", "ENCONTRAR REVISTAS", "ESCREVER COVER LETTER", "SUBMETER PARA REVISTA",
+            "RESPONDER REVISORES", "ESCREVER REBUTTAL LETTER", "ULTIMOS AJUSTES", "TAREFA CONCLUÍDA"
+        ];
+
+        let currentProjectId = null;
+        let currentStagesProjectId = null;
+        let currentUser = getCurrentUser();
+        let isMentor = false;
+        let allStudents = [];
+
+        if (!currentUser) {
+            window.location.href = 'index.html';
+        }
+
+        isMentor = currentUser.user_type && currentUser.user_type.startsWith('mentor_');
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            logout();
+            window.location.href = 'index.html';
+        });
+
+        // Meta-analysis type change handler
+        document.getElementById('metaAnalysisType').addEventListener('change', (e) => {
+            updateTitleFields(e.target.value);
+        });
+
+        function updateTitleFields(type) {
+            const titleFields = document.getElementById('titleFields');
+
+            if (type === 'double_arm') {
+                titleFields.innerHTML = `
+                    <div class="form-group">
+                        <label>Título do Projeto *</label>
+                        <div class="title-builder">
+                            <input type="text" id="intervention" placeholder="INTERVENTION" required>
+                            <span>VERSUS</span>
+                            <input type="text" id="comparison" placeholder="COMPARISON" required>
+                            <span>FOR</span>
+                            <input type="text" id="population" placeholder="POPULATION" required>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'single_arm') {
+                titleFields.innerHTML = `
+                    <div class="form-group">
+                        <label>Título do Projeto *</label>
+                        <div class="title-builder">
+                            <input type="text" id="intervention" placeholder="INTERVENTION" required>
+                            <span>FOR</span>
+                            <input type="text" id="population" placeholder="POPULATION" required>
+                        </div>
+                    </div>
+                `;
+            } else if (type === 'network') {
+                titleFields.innerHTML = `
+                    <div class="form-group">
+                        <label>Título do Projeto *</label>
+                        <div class="title-builder">
+                            <input type="text" id="intervention" placeholder="INTERVENTIONS (separar com vírgula)" required>
+                            <span>FOR</span>
+                            <input type="text" id="population" placeholder="POPULATION" required>
+                        </div>
+                    </div>
+                `;
+            } else {
+                titleFields.innerHTML = `
+                    <div class="form-group">
+                        <label for="customTitle">Título do Projeto *</label>
+                        <input type="text" id="customTitle" required>
+                    </div>
+                `;
+            }
+        }
+
+        // Project Modal
+        const projectModal = document.getElementById('projectModal');
+        const newProjectBtn = document.getElementById('newProjectBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const closeBtn = document.querySelector('.close');
+
+        newProjectBtn.addEventListener('click', () => {
+            currentProjectId = null;
+            document.getElementById('modalTitle').textContent = 'Novo Projeto de Pesquisa';
+            document.getElementById('projectForm').reset();
+            document.getElementById('titleFields').innerHTML = '';
+            projectModal.classList.remove('hidden');
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            projectModal.classList.add('hidden');
+        });
+
+        closeBtn.addEventListener('click', () => {
+            projectModal.classList.add('hidden');
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === projectModal) {
+                projectModal.classList.add('hidden');
+            }
+        });
+
+        // Project Form Submit
+        document.getElementById('projectForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const metaType = document.getElementById('metaAnalysisType').value;
+            let title = '';
+            let intervention = '';
+            let comparison = '';
+            let population = '';
+
+            if (metaType === 'none') {
+                title = document.getElementById('customTitle').value.toUpperCase();
+            } else {
+                intervention = document.getElementById('intervention').value.toUpperCase();
+                population = document.getElementById('population').value.toUpperCase();
+
+                if (metaType === 'double_arm') {
+                    comparison = document.getElementById('comparison').value.toUpperCase();
+                    title = `${intervention} VERSUS ${comparison} FOR ${population}`;
+                } else if (metaType === 'single_arm') {
+                    title = `${intervention} FOR ${population}`;
+                } else if (metaType === 'network') {
+                    title = `${intervention} FOR ${population}`;
+                }
+            }
+
+            const projectData = {
+                meta_analysis_type: metaType,
+                intervention: intervention || null,
+                comparison: comparison || null,
+                population: population || null,
+                title: title,
+                current_stage: document.getElementById('currentStage').value,
+                deadline: document.getElementById('deadline').value || null,
+                drive_link: document.getElementById('driveLink').value || null,
+                comments: document.getElementById('comments').value || null,
+                created_by: currentUser.id
+            };
+
+            try {
+                if (currentProjectId) {
+                    await updateResearchProject(currentProjectId, projectData);
+                } else {
+                    const project = await createResearchProject(projectData);
+                    // Create all stages for new project
+                    await createProjectStages(project.id);
+                    // Add creator as author
+                    await addResearchAuthor(project.id, currentUser.id);
+                }
+                projectModal.classList.add('hidden');
+                loadProjects();
+            } catch (error) {
+                console.error('Error saving project:', error);
+                alert('Erro ao salvar projeto.');
+            }
+        });
+
+        async function createProjectStages(projectId) {
+            const sb = initSupabase();
+            const stages = RESEARCH_STAGES.map(stageName => ({
+                project_id: projectId,
+                stage_name: stageName,
+                is_completed: false
+            }));
+
+            const { error } = await sb
+                .from('research_stages')
+                .insert(stages);
+
+            if (error) throw error;
+        }
+
+        // Authors Modal
+        const authorsModal = document.getElementById('authorsModal');
+        const saveAuthorsBtn = document.getElementById('saveAuthorsBtn');
+        const closeAuthorsBtn = document.querySelectorAll('.close-authors');
+
+        closeAuthorsBtn.forEach(btn => {
+            btn.addEventListener('click', () => {
+                authorsModal.classList.add('hidden');
+            });
+        });
+
+        saveAuthorsBtn.addEventListener('click', async () => {
+            const checkboxes = document.querySelectorAll('#studentsList input[type="checkbox"]:checked');
+            const selectedStudents = Array.from(checkboxes).map(cb => cb.value);
+
+            try {
+                // Remove all authors first
+                const sb = initSupabase();
+                await sb.from('research_authors').delete().eq('project_id', currentProjectId);
+
+                // Add selected authors
+                for (const studentId of selectedStudents) {
+                    await addResearchAuthor(currentProjectId, studentId);
+                }
+
+                authorsModal.classList.add('hidden');
+                loadProjects();
+            } catch (error) {
+                console.error('Error saving authors:', error);
+                alert('Erro ao salvar autores.');
+            }
+        });
+
+        // Stages Modal
+        const stagesModal = document.getElementById('stagesModal');
+        const closeStagesBtn = document.querySelectorAll('.close-stages');
+
+        closeStagesBtn.forEach(btn => {
+            btn.addEventListener('click', () => {
+                stagesModal.classList.add('hidden');
+            });
+        });
+
+        // Load projects
+        async function loadProjects() {
+            try {
+                let projects;
+
+                if (isMentor) {
+                    projects = await getAllResearchProjects();
+                } else {
+                    projects = await getUserResearchProjects(currentUser.id);
+                }
+
+                displayProjects(projects);
+            } catch (error) {
+                console.error('Error loading projects:', error);
+                document.getElementById('projectsContainer').innerHTML = '<p class="error-message">Erro ao carregar projetos.</p>';
+            }
+        }
+
+        async function displayProjects(projects) {
+            const container = document.getElementById('projectsContainer');
+
+            if (projects.length === 0) {
+                container.innerHTML = '<p class="no-data">Nenhum projeto de pesquisa ainda.</p>';
+                return;
+            }
+
+            const projectsHTML = await Promise.all(projects.map(async (project) => {
+                // Get authors
+                const authors = await getProjectAuthors(project.id);
+                const authorNames = authors.map(a => a.user_profiles?.full_name || 'Usuário').join(', ');
+
+                // Get completed stages count
+                const stages = await getProjectStages(project.id);
+                const completedCount = stages.filter(s => s.is_completed).length;
+                const totalCount = stages.length;
+                const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+
+                return `
+                    <div class="project-card">
+                        <div class="project-header">
+                            <h3>${project.title}</h3>
+                            <div class="project-meta">
+                                <span class="badge">${project.meta_analysis_type.replace('_', ' ').toUpperCase()}</span>
+                                <span class="stage-badge">${project.current_stage}</span>
+                            </div>
+                        </div>
+
+                        <div class="project-info">
+                            <p><strong>Autores:</strong> ${authorNames || 'Nenhum autor'}</p>
+                            ${project.deadline ? `<p><strong>Deadline:</strong> ${new Date(project.deadline).toLocaleDateString('pt-BR')}</p>` : ''}
+                            ${project.drive_link ? `<p><strong>Drive:</strong> <a href="${project.drive_link}" target="_blank">Abrir pasta</a></p>` : ''}
+                        </div>
+
+                        <div class="project-progress">
+                            <div class="progress-bar">
+                                <div class="progress-fill" style="width: ${progressPercent}%"></div>
+                            </div>
+                            <span class="progress-text">${completedCount}/${totalCount} etapas concluídas (${progressPercent}%)</span>
+                        </div>
+
+                        ${project.comments ? `
+                            <div class="project-comments">
+                                <strong>Comentários:</strong>
+                                <p>${project.comments}</p>
+                            </div>
+                        ` : ''}
+
+                        <div class="project-actions">
+                            <button class="btn btn-sm btn-secondary view-stages" data-id="${project.id}">Ver Etapas</button>
+                            ${isMentor ? `<button class="btn btn-sm btn-secondary manage-authors" data-id="${project.id}">Gerenciar Autores</button>` : ''}
+                            ${(isMentor || project.created_by === currentUser.id) ? `
+                                <button class="btn btn-sm btn-secondary edit-project" data-id="${project.id}">Editar</button>
+                                <button class="btn btn-sm btn-danger delete-project" data-id="${project.id}">Excluir</button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+            }));
+
+            container.innerHTML = projectsHTML.join('');
+
+            // Attach event listeners
+            attachProjectEventListeners();
+        }
+
+        function attachProjectEventListeners() {
+            document.querySelectorAll('.view-stages').forEach(btn => {
+                btn.addEventListener('click', () => viewStages(btn.dataset.id));
+            });
+
+            document.querySelectorAll('.manage-authors').forEach(btn => {
+                btn.addEventListener('click', () => manageAuthors(btn.dataset.id));
+            });
+
+            document.querySelectorAll('.edit-project').forEach(btn => {
+                btn.addEventListener('click', () => editProject(btn.dataset.id));
+            });
+
+            document.querySelectorAll('.delete-project').forEach(btn => {
+                btn.addEventListener('click', () => deleteProject(btn.dataset.id));
+            });
+        }
+
+        async function viewStages(projectId) {
+            currentStagesProjectId = projectId;
+            const stages = await getProjectStages(projectId);
+            const stagesList = document.getElementById('stagesList');
+
+            const stagesHTML = stages.map(stage => `
+                <div class="stage-item ${stage.is_completed ? 'completed' : ''}">
+                    <div class="stage-checkbox">
+                        <input type="checkbox" id="stage-${stage.id}" ${stage.is_completed ? 'checked' : ''}
+                               onchange="toggleStage('${stage.id}', this.checked)">
+                        <label for="stage-${stage.id}">${stage.stage_name}</label>
+                    </div>
+                    <div class="stage-authors">
+                        <input type="text" placeholder="Autores envolvidos (separar com vírgula)"
+                               value="${stage.authors_involved || ''}"
+                               onblur="updateStageAuthors('${stage.id}', this.value)">
+                    </div>
+                    ${stage.completed_date ? `<div class="stage-date">Concluído em: ${new Date(stage.completed_date).toLocaleDateString('pt-BR')}</div>` : ''}
+                </div>
+            `).join('');
+
+            stagesList.innerHTML = stagesHTML;
+            stagesModal.classList.remove('hidden');
+        }
+
+        window.toggleStage = async function(stageId, isCompleted) {
+            try {
+                const sb = initSupabase();
+                const updateData = {
+                    is_completed: isCompleted,
+                    completed_date: isCompleted ? new Date().toISOString().split('T')[0] : null
+                };
+
+                const { error } = await sb
+                    .from('research_stages')
+                    .update(updateData)
+                    .eq('id', stageId);
+
+                if (error) throw error;
+                loadProjects();
+            } catch (error) {
+                console.error('Error updating stage:', error);
+            }
+        };
+
+        window.updateStageAuthors = async function(stageId, authors) {
+            try {
+                const sb = initSupabase();
+                const { error } = await sb
+                    .from('research_stages')
+                    .update({ authors_involved: authors })
+                    .eq('id', stageId);
+
+                if (error) throw error;
+            } catch (error) {
+                console.error('Error updating stage authors:', error);
+            }
+        };
+
+        async function manageAuthors(projectId) {
+            currentProjectId = projectId;
+
+            // Load all students
+            const sb = initSupabase();
+            const { data: students, error } = await sb
+                .from('users')
+                .select('id, user_profiles(full_name)')
+                .eq('user_type', 'student');
+
+            if (error) {
+                console.error('Error loading students:', error);
+                return;
+            }
+
+            // Get current authors
+            const currentAuthors = await getProjectAuthors(projectId);
+            const authorIds = currentAuthors.map(a => a.user_id);
+
+            const studentsList = document.getElementById('studentsList');
+            studentsList.innerHTML = students.map(student => `
+                <div class="student-checkbox">
+                    <input type="checkbox" id="student-${student.id}" value="${student.id}"
+                           ${authorIds.includes(student.id) ? 'checked' : ''}>
+                    <label for="student-${student.id}">${student.user_profiles?.full_name || 'Sem nome'}</label>
+                </div>
+            `).join('');
+
+            authorsModal.classList.remove('hidden');
+        }
+
+        async function editProject(projectId) {
+            try {
+                const project = await getResearchProjectById(projectId);
+
+                currentProjectId = projectId;
+                document.getElementById('modalTitle').textContent = 'Editar Projeto';
+                document.getElementById('metaAnalysisType').value = project.meta_analysis_type;
+                updateTitleFields(project.meta_analysis_type);
+
+                // Wait for title fields to be generated
+                setTimeout(() => {
+                    if (project.meta_analysis_type !== 'none') {
+                        if (document.getElementById('intervention')) {
+                            document.getElementById('intervention').value = project.intervention || '';
+                        }
+                        if (document.getElementById('comparison')) {
+                            document.getElementById('comparison').value = project.comparison || '';
+                        }
+                        if (document.getElementById('population')) {
+                            document.getElementById('population').value = project.population || '';
+                        }
+                    } else {
+                        document.getElementById('customTitle').value = project.title || '';
+                    }
+
+                    document.getElementById('currentStage').value = project.current_stage || 'NOVA TAREFA';
+                    document.getElementById('deadline').value = project.deadline || '';
+                    document.getElementById('driveLink').value = project.drive_link || '';
+                    document.getElementById('comments').value = project.comments || '';
+
+                    projectModal.classList.remove('hidden');
+                }, 100);
+            } catch (error) {
+                console.error('Error loading project:', error);
+                alert('Erro ao carregar projeto.');
+            }
+        }
+
+        async function deleteProject(projectId) {
+            if (!confirm('Tem certeza que deseja excluir este projeto?')) return;
+
+            try {
+                const sb = initSupabase();
+                const { error } = await sb
+                    .from('research_projects')
+                    .delete()
+                    .eq('id', projectId);
+
+                if (error) throw error;
+                loadProjects();
+            } catch (error) {
+                console.error('Error deleting project:', error);
+                alert('Erro ao excluir projeto.');
+            }
+        }
+
+        async function getProjectAuthors(projectId) {
+            const sb = initSupabase();
+            const { data, error } = await sb
+                .from('research_authors')
+                .select('*, user_profiles(full_name)')
+                .eq('project_id', projectId);
+
+            if (error) throw error;
+            return data || [];
+        }
+
+        async function getProjectStages(projectId) {
+            const sb = initSupabase();
+            const { data, error } = await sb
+                .from('research_stages')
+                .select('*')
+                .eq('project_id', projectId)
+                .order('created_at', { ascending: true });
+
+            if (error) throw error;
+            return data || [];
+        }
+
+        // Initial load
+        loadProjects();
+    </script>
+
+    <style>
+        .projects-container {
+            display: grid;
+            gap: 20px;
+        }
+
+        .project-card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 25px;
+        }
+
+        .project-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .project-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--color-primary);
+            flex: 1;
+        }
+
+        .project-meta {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .stage-badge {
+            background: var(--color-primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .project-info {
+            margin: 15px 0;
+        }
+
+        .project-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .project-progress {
+            margin: 20px 0;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e0e0e0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--color-primary);
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            display: block;
+            text-align: center;
+            margin-top: 5px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .project-comments {
+            background: var(--color-light-gray);
+            padding: 15px;
+            border-radius: 4px;
+            margin: 15px 0;
+        }
+
+        .project-comments p {
+            margin: 5px 0 0 0;
+            white-space: pre-wrap;
+        }
+
+        .project-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+            flex-wrap: wrap;
+        }
+
+        .title-builder {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .title-builder input {
+            flex: 1;
+            min-width: 150px;
+        }
+
+        .title-builder span {
+            font-weight: bold;
+            color: var(--color-primary);
+        }
+
+        .modal-large {
+            max-width: 800px;
+        }
+
+        .stages-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .stage-item {
+            background: var(--color-light-gray);
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border-left: 4px solid #ccc;
+        }
+
+        .stage-item.completed {
+            border-left-color: #4caf50;
+            background: #f1f8f4;
+        }
+
+        .stage-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .stage-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+        }
+
+        .stage-checkbox label {
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .stage-authors input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+        }
+
+        .stage-date {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+        }
+
+        .students-list {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 10px 0;
+        }
+
+        .student-checkbox {
+            padding: 10px;
+            border-bottom: 1px solid var(--color-border);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .student-checkbox input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+        }
+
+        .student-checkbox label {
+            cursor: pointer;
+        }
+    </style>
+</body>
+</html>

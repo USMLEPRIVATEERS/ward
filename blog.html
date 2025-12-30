@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ward Academy - Blog</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1>Ward Academy</h1>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="links.html">Links</a>
+                <a href="blog.html" class="active">Blog</a>
+                <a href="research.html">Pesquisa</a>
+                <a href="#" id="logoutBtn">Sair</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <h2>Blog da Ward Academy</h2>
+            <button class="btn btn-primary" id="newPostBtn">Nova Postagem</button>
+        </div>
+
+        <!-- New Post Form -->
+        <div id="newPostForm" class="post-form hidden">
+            <h3 id="formTitle">Nova Postagem</h3>
+            <form id="postForm">
+                <div class="form-group">
+                    <label for="postContent">Conteúdo *</label>
+                    <textarea id="postContent" rows="5" required></textarea>
+                    <div class="char-counter">
+                        <span id="charCount">0</span><span id="charLimit"></span>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelPostBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Publicar</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Posts Container -->
+        <div id="postsContainer" class="posts-container">
+            <!-- Posts will be loaded here -->
+        </div>
+    </main>
+
+    <!-- Pin Modal -->
+    <div id="pinModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Fixar Postagem</h3>
+            <form id="pinForm">
+                <div class="form-group">
+                    <label>Fixar por:</label>
+                    <select id="pinDuration" required>
+                        <option value="1week">1 semana</option>
+                        <option value="1month">1 mês</option>
+                        <option value="permanent">Permanentemente</option>
+                    </select>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelPinBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Fixar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script>
+        let currentPostId = null;
+        let currentUser = getCurrentUser();
+        let isMentor = false;
+        let maxChars = 250; // Default for students
+
+        if (!currentUser) {
+            window.location.href = 'index.html';
+        }
+
+        // Check if user is mentor
+        isMentor = currentUser.user_type && currentUser.user_type.startsWith('mentor_');
+        if (isMentor) {
+            maxChars = 999999; // No limit for mentors
+        }
+
+        // Update character limit display
+        const charLimitSpan = document.getElementById('charLimit');
+        charLimitSpan.textContent = isMentor ? '' : ` / ${maxChars}`;
+
+        // Logout handler
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            logout();
+            window.location.href = 'index.html';
+        });
+
+        // New post button
+        const newPostBtn = document.getElementById('newPostBtn');
+        const newPostForm = document.getElementById('newPostForm');
+        const cancelPostBtn = document.getElementById('cancelPostBtn');
+        const postForm = document.getElementById('postForm');
+        const postContent = document.getElementById('postContent');
+        const charCount = document.getElementById('charCount');
+
+        newPostBtn.addEventListener('click', () => {
+            currentPostId = null;
+            document.getElementById('formTitle').textContent = 'Nova Postagem';
+            postForm.reset();
+            charCount.textContent = '0';
+            newPostForm.classList.remove('hidden');
+            newPostBtn.style.display = 'none';
+        });
+
+        cancelPostBtn.addEventListener('click', () => {
+            newPostForm.classList.add('hidden');
+            newPostBtn.style.display = 'block';
+        });
+
+        // Character counter
+        postContent.addEventListener('input', () => {
+            const length = postContent.value.length;
+            charCount.textContent = length;
+
+            if (!isMentor && length > maxChars) {
+                postContent.value = postContent.value.substring(0, maxChars);
+                charCount.textContent = maxChars;
+            }
+        });
+
+        // Submit post
+        postForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const content = postContent.value.trim();
+            if (!content) return;
+
+            try {
+                if (currentPostId) {
+                    await updateBlogPost(currentPostId, { content });
+                } else {
+                    await createBlogPost({
+                        content,
+                        author_id: currentUser.id
+                    });
+                }
+                newPostForm.classList.add('hidden');
+                newPostBtn.style.display = 'block';
+                loadPosts();
+            } catch (error) {
+                console.error('Error saving post:', error);
+                alert('Erro ao salvar postagem.');
+            }
+        });
+
+        // Pin modal
+        const pinModal = document.getElementById('pinModal');
+        const cancelPinBtn = document.getElementById('cancelPinBtn');
+        const pinForm = document.getElementById('pinForm');
+        const closeBtn = document.querySelector('.close');
+
+        cancelPinBtn.addEventListener('click', () => {
+            pinModal.classList.add('hidden');
+        });
+
+        closeBtn.addEventListener('click', () => {
+            pinModal.classList.add('hidden');
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === pinModal) {
+                pinModal.classList.add('hidden');
+            }
+        });
+
+        pinForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const duration = document.getElementById('pinDuration').value;
+            let pinnedUntil = null;
+
+            if (duration === '1week') {
+                pinnedUntil = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+            } else if (duration === '1month') {
+                pinnedUntil = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+            }
+
+            try {
+                await updateBlogPost(currentPostId, {
+                    is_pinned: true,
+                    pinned_until: pinnedUntil
+                });
+                pinModal.classList.add('hidden');
+                loadPosts();
+            } catch (error) {
+                console.error('Error pinning post:', error);
+                alert('Erro ao fixar postagem.');
+            }
+        });
+
+        // Load posts
+        async function loadPosts() {
+            try {
+                const posts = await getBlogPosts();
+                displayPosts(posts);
+            } catch (error) {
+                console.error('Error loading posts:', error);
+                document.getElementById('postsContainer').innerHTML = '<p class="error-message">Erro ao carregar postagens.</p>';
+            }
+        }
+
+        async function displayPosts(posts) {
+            const container = document.getElementById('postsContainer');
+
+            if (posts.length === 0) {
+                container.innerHTML = '<p class="no-data">Nenhuma postagem ainda. Seja o primeiro a postar!</p>';
+                return;
+            }
+
+            // Sort posts: pinned first, then by likes, then by date
+            posts.sort((a, b) => {
+                if (a.is_pinned && !b.is_pinned) return -1;
+                if (!a.is_pinned && b.is_pinned) return 1;
+
+                const aLikes = (a.likes || 0) - (a.dislikes || 0);
+                const bLikes = (b.likes || 0) - (b.dislikes || 0);
+                if (aLikes !== bLikes) return bLikes - aLikes;
+
+                return new Date(b.created_at) - new Date(a.created_at);
+            });
+
+            const postsHTML = await Promise.all(posts.map(async (post) => {
+                const author = post.user_profiles?.full_name || 'Usuário';
+                const date = new Date(post.created_at).toLocaleDateString('pt-BR');
+                const time = new Date(post.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+                // Get user's like/dislike status
+                const userLike = await getUserLikeStatus(post.id, currentUser.id);
+
+                return `
+                    <div class="post-card ${post.is_pinned ? 'pinned' : ''}">
+                        ${post.is_pinned ? '<div class="pin-badge">📌 Fixado</div>' : ''}
+                        <div class="post-header">
+                            <div class="post-author">
+                                <strong>${author}</strong>
+                                <span class="post-date">${date} às ${time}</span>
+                            </div>
+                            ${(isMentor || post.author_id === currentUser.id) ? `
+                                <div class="post-actions">
+                                    ${isMentor && !post.is_pinned ? `<button class="btn-icon pin-post" data-id="${post.id}" title="Fixar">📌</button>` : ''}
+                                    ${isMentor && post.is_pinned ? `<button class="btn-icon unpin-post" data-id="${post.id}" title="Desfixar">📍</button>` : ''}
+                                    ${post.author_id === currentUser.id ? `<button class="btn-icon edit-post" data-id="${post.id}" title="Editar">✏️</button>` : ''}
+                                    ${(isMentor || post.author_id === currentUser.id) ? `<button class="btn-icon delete-post" data-id="${post.id}" title="Excluir">🗑️</button>` : ''}
+                                </div>
+                            ` : ''}
+                        </div>
+                        <div class="post-content">${escapeHtml(post.content)}</div>
+                        <div class="post-footer">
+                            <div class="post-likes">
+                                <button class="like-btn ${userLike === true ? 'active' : ''}" data-id="${post.id}">
+                                    👍 <span>${post.likes || 0}</span>
+                                </button>
+                                <button class="dislike-btn ${userLike === false ? 'active' : ''}" data-id="${post.id}">
+                                    👎 <span>${post.dislikes || 0}</span>
+                                </button>
+                            </div>
+                            <button class="comment-toggle" data-id="${post.id}">
+                                💬 Comentários (<span class="comment-count">${post.comment_count || 0}</span>)
+                            </button>
+                        </div>
+                        <div id="comments-${post.id}" class="comments-section hidden">
+                            <!-- Comments will be loaded here -->
+                        </div>
+                    </div>
+                `;
+            }));
+
+            container.innerHTML = postsHTML.join('');
+
+            // Add event listeners
+            attachPostEventListeners();
+        }
+
+        function attachPostEventListeners() {
+            // Like/Dislike buttons
+            document.querySelectorAll('.like-btn').forEach(btn => {
+                btn.addEventListener('click', () => toggleLike(btn.dataset.id, true));
+            });
+
+            document.querySelectorAll('.dislike-btn').forEach(btn => {
+                btn.addEventListener('click', () => toggleLike(btn.dataset.id, false));
+            });
+
+            // Comment toggle
+            document.querySelectorAll('.comment-toggle').forEach(btn => {
+                btn.addEventListener('click', () => toggleComments(btn.dataset.id));
+            });
+
+            // Pin/Unpin
+            document.querySelectorAll('.pin-post').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    currentPostId = btn.dataset.id;
+                    pinModal.classList.remove('hidden');
+                });
+            });
+
+            document.querySelectorAll('.unpin-post').forEach(btn => {
+                btn.addEventListener('click', () => unpinPost(btn.dataset.id));
+            });
+
+            // Edit
+            document.querySelectorAll('.edit-post').forEach(btn => {
+                btn.addEventListener('click', () => editPost(btn.dataset.id));
+            });
+
+            // Delete
+            document.querySelectorAll('.delete-post').forEach(btn => {
+                btn.addEventListener('click', () => deletePost(btn.dataset.id));
+            });
+        }
+
+        async function toggleLike(postId, isLike) {
+            try {
+                await toggleBlogLike(postId, currentUser.id, isLike);
+                loadPosts();
+            } catch (error) {
+                console.error('Error toggling like:', error);
+            }
+        }
+
+        async function getUserLikeStatus(postId, userId) {
+            try {
+                const sb = initSupabase();
+                const { data, error } = await sb
+                    .from('blog_likes')
+                    .select('is_like')
+                    .eq('post_id', postId)
+                    .eq('user_id', userId)
+                    .maybeSingle();
+
+                if (error && error.code !== 'PGRST116') throw error;
+                return data?.is_like;
+            } catch (error) {
+                console.error('Error getting like status:', error);
+                return null;
+            }
+        }
+
+        async function toggleComments(postId) {
+            const commentsSection = document.getElementById(`comments-${postId}`);
+
+            if (commentsSection.classList.contains('hidden')) {
+                await loadComments(postId);
+                commentsSection.classList.remove('hidden');
+            } else {
+                commentsSection.classList.add('hidden');
+            }
+        }
+
+        async function loadComments(postId) {
+            try {
+                const comments = await getBlogComments(postId);
+                const commentsSection = document.getElementById(`comments-${postId}`);
+
+                const commentsHTML = comments.map(comment => {
+                    const author = comment.user_profiles?.full_name || 'Usuário';
+                    const date = new Date(comment.created_at).toLocaleDateString('pt-BR');
+                    const time = new Date(comment.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+                    return `
+                        <div class="comment">
+                            <div class="comment-header">
+                                <strong>${author}</strong>
+                                <span class="comment-date">${date} às ${time}</span>
+                            </div>
+                            <div class="comment-content">${escapeHtml(comment.content)}</div>
+                        </div>
+                    `;
+                }).join('');
+
+                commentsSection.innerHTML = `
+                    <div class="comments-list">${commentsHTML || '<p class="no-comments">Nenhum comentário ainda.</p>'}</div>
+                    <div class="comment-form">
+                        <textarea class="comment-input" placeholder="Escrever comentário..." rows="2" maxlength="250"></textarea>
+                        <button class="btn btn-sm btn-primary submit-comment" data-post-id="${postId}">Comentar</button>
+                    </div>
+                `;
+
+                commentsSection.querySelector('.submit-comment').addEventListener('click', () => submitComment(postId));
+            } catch (error) {
+                console.error('Error loading comments:', error);
+            }
+        }
+
+        async function submitComment(postId) {
+            const commentsSection = document.getElementById(`comments-${postId}`);
+            const input = commentsSection.querySelector('.comment-input');
+            const content = input.value.trim();
+
+            if (!content) return;
+
+            try {
+                await createBlogComment({
+                    post_id: postId,
+                    author_id: currentUser.id,
+                    content
+                });
+                await loadComments(postId);
+                loadPosts(); // Refresh to update comment count
+            } catch (error) {
+                console.error('Error submitting comment:', error);
+                alert('Erro ao enviar comentário.');
+            }
+        }
+
+        async function unpinPost(postId) {
+            try {
+                await updateBlogPost(postId, {
+                    is_pinned: false,
+                    pinned_until: null
+                });
+                loadPosts();
+            } catch (error) {
+                console.error('Error unpinning post:', error);
+                alert('Erro ao desfixar postagem.');
+            }
+        }
+
+        async function editPost(postId) {
+            try {
+                const sb = initSupabase();
+                const { data, error } = await sb
+                    .from('blog_posts')
+                    .select('*')
+                    .eq('id', postId)
+                    .single();
+
+                if (error) throw error;
+
+                currentPostId = postId;
+                document.getElementById('formTitle').textContent = 'Editar Postagem';
+                postContent.value = data.content;
+                charCount.textContent = data.content.length;
+                newPostForm.classList.remove('hidden');
+                newPostBtn.style.display = 'none';
+            } catch (error) {
+                console.error('Error loading post:', error);
+                alert('Erro ao carregar postagem.');
+            }
+        }
+
+        async function deletePost(postId) {
+            if (!confirm('Tem certeza que deseja excluir esta postagem?')) return;
+
+            try {
+                const sb = initSupabase();
+                const { error } = await sb
+                    .from('blog_posts')
+                    .delete()
+                    .eq('id', postId);
+
+                if (error) throw error;
+                loadPosts();
+            } catch (error) {
+                console.error('Error deleting post:', error);
+                alert('Erro ao excluir postagem.');
+            }
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML.replace(/\n/g, '<br>');
+        }
+
+        // Initial load
+        loadPosts();
+    </script>
+
+    <style>
+        .post-form {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 30px;
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .posts-container {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .post-card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 20px;
+            position: relative;
+        }
+
+        .post-card.pinned {
+            border: 2px solid var(--color-primary);
+            background: #fff8f0;
+        }
+
+        .pin-badge {
+            position: absolute;
+            top: -10px;
+            right: 20px;
+            background: var(--color-primary);
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .post-author {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .post-date {
+            font-size: 14px;
+            color: #888;
+            margin-top: 4px;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .post-content {
+            margin: 15px 0;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .post-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .post-likes {
+            display: flex;
+            gap: 10px;
+        }
+
+        .like-btn, .dislike-btn {
+            background: white;
+            border: 1px solid var(--color-border);
+            padding: 6px 12px;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .like-btn:hover {
+            background: #e8f5e9;
+            border-color: #4caf50;
+        }
+
+        .dislike-btn:hover {
+            background: #ffebee;
+            border-color: #f44336;
+        }
+
+        .like-btn.active {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+        }
+
+        .dislike-btn.active {
+            background: #f44336;
+            color: white;
+            border-color: #f44336;
+        }
+
+        .comment-toggle {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .comments-section {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .comments-list {
+            margin-bottom: 15px;
+        }
+
+        .comment {
+            background: var(--color-light-gray);
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        .comment-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .comment-date {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .comment-content {
+            font-size: 14px;
+        }
+
+        .comment-form {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+        }
+
+        .comment-input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid var(--color-border);
+            border-radius: 4px;
+            resize: vertical;
+        }
+
+        .no-comments {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+            margin: 20px 0;
+        }
+    </style>
+</body>
+</html>

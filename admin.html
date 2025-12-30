@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ward Academy - Administração</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1>Ward Academy - Admin</h1>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="admin.html" class="active">Admin</a>
+                <a href="students.html">Alunos</a>
+                <a href="links.html">Links</a>
+                <a href="blog.html">Blog</a>
+                <a href="research.html">Pesquisa</a>
+                <a href="#" id="logoutBtn">Sair</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <h2>Painel Administrativo</h2>
+            <button class="btn btn-primary" id="addUserBtn">➕ Adicionar Novo Membro</button>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="users">👥 Gerenciar Usuários</button>
+            <button class="tab-btn" data-tab="schedules">📅 Cronogramas</button>
+        </div>
+
+        <!-- Users Tab -->
+        <div id="usersTab" class="tab-content active">
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Buscar por nome ou email...">
+            </div>
+
+            <div id="usersContainer" class="users-table">
+                <!-- Users will be loaded here -->
+            </div>
+        </div>
+
+        <!-- Schedules Tab -->
+        <div id="schedulesTab" class="tab-content hidden">
+            <div class="schedule-manager">
+                <div class="form-group">
+                    <label for="studentSelect">Selecionar Aluno *</label>
+                    <select id="studentSelect">
+                        <option value="">Selecione um aluno...</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="scheduleData">Colar Cronograma (Excel - separado por TAB) *</label>
+                    <textarea id="scheduleData" rows="10" placeholder="Cole aqui os dados do Excel&#10;SYSTEM    CATEGORY    QUESTOES    TERMINEI"></textarea>
+                    <small>Formato: SYSTEM [TAB] CATEGORY [TAB] QUESTOES [TAB] FALSE</small>
+                </div>
+
+                <div class="form-actions">
+                    <button class="btn btn-primary" id="saveScheduleBtn">Salvar Cronograma</button>
+                    <button class="btn btn-secondary" id="clearScheduleBtn">Limpar</button>
+                </div>
+
+                <div id="schedulePreview" class="schedule-preview hidden">
+                    <h4>Preview do Cronograma:</h4>
+                    <div id="previewTable"></div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add/Edit User Modal -->
+    <div id="userModal" class="modal hidden">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 id="modalTitle">Adicionar Novo Membro</h3>
+            <form id="userForm">
+                <div class="form-group">
+                    <label for="userEmail">Email *</label>
+                    <input type="email" id="userEmail" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="userPassword">Senha *</label>
+                    <input type="text" id="userPassword" required>
+                    <button type="button" class="btn btn-sm btn-secondary" id="generatePasswordBtn">Gerar Senha</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="userType">Tipo de Usuário *</label>
+                    <select id="userType" required>
+                        <option value="student">Aluno</option>
+                        <option value="mentor_marcos">Mentor - Marcos</option>
+                        <option value="mentor_iria">Mentor - Dra. Iria</option>
+                        <option value="mentor_guilherme">Mentor - Guilherme</option>
+                        <option value="mentor_romulo">Mentor - Rômulo</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="fullName">Nome Completo</label>
+                    <input type="text" id="fullName">
+                </div>
+
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit User Details Modal -->
+    <div id="detailsModal" class="modal hidden">
+        <div class="modal-content modal-large">
+            <span class="close close-details">&times;</span>
+            <h3 id="detailsModalTitle">Editar Dados do Usuário</h3>
+            <div id="userDetailsContent">
+                <!-- User details form will be loaded here -->
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script>
+        let currentUser = getCurrentUser();
+        let currentEditUserId = null;
+        let allUsers = [];
+        let allStudents = [];
+
+        if (!currentUser) {
+            window.location.href = 'index.html';
+        }
+
+        // Check if user is Marcos (admin)
+        if (currentUser.user_type !== 'mentor_marcos') {
+            alert('Acesso negado. Esta página é apenas para administradores.');
+            window.location.href = 'dashboard.html';
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            logout();
+            window.location.href = 'index.html';
+        });
+
+        // Tab navigation
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabName = btn.dataset.tab;
+
+                // Update active tab button
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Show/hide tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.add('hidden');
+                });
+                document.getElementById(`${tabName}Tab`).classList.remove('hidden');
+
+                if (tabName === 'schedules') {
+                    loadStudentsList();
+                }
+            });
+        });
+
+        // User Modal
+        const userModal = document.getElementById('userModal');
+        const addUserBtn = document.getElementById('addUserBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const closeBtn = document.querySelector('.close');
+        const userForm = document.getElementById('userForm');
+
+        addUserBtn.addEventListener('click', () => {
+            currentEditUserId = null;
+            document.getElementById('modalTitle').textContent = 'Adicionar Novo Membro';
+            userForm.reset();
+            userModal.classList.remove('hidden');
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            userModal.classList.add('hidden');
+        });
+
+        closeBtn.addEventListener('click', () => {
+            userModal.classList.add('hidden');
+        });
+
+        // Generate password button
+        document.getElementById('generatePasswordBtn').addEventListener('click', () => {
+            const password = generatePassword();
+            document.getElementById('userPassword').value = password;
+        });
+
+        function generatePassword() {
+            const length = 12;
+            const charset = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@#$%^&*';
+            let password = '';
+            for (let i = 0; i < length; i++) {
+                password += charset.charAt(Math.floor(Math.random() * charset.length));
+            }
+            return password;
+        }
+
+        // User Form Submit
+        userForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const userData = {
+                email: document.getElementById('userEmail').value,
+                password_hash: document.getElementById('userPassword').value,
+                user_type: document.getElementById('userType').value,
+                is_active: true,
+                first_login: true
+            };
+
+            const fullName = document.getElementById('fullName').value;
+
+            try {
+                const sb = initSupabase();
+
+                if (currentEditUserId) {
+                    // Update user
+                    const { error: userError } = await sb
+                        .from('users')
+                        .update(userData)
+                        .eq('id', currentEditUserId);
+
+                    if (userError) throw userError;
+
+                    if (fullName) {
+                        await sb
+                            .from('user_profiles')
+                            .upsert({
+                                user_id: currentEditUserId,
+                                full_name: fullName
+                            });
+                    }
+                } else {
+                    // Create new user
+                    const { data: newUser, error: userError } = await sb
+                        .from('users')
+                        .insert(userData)
+                        .select()
+                        .single();
+
+                    if (userError) throw userError;
+
+                    // Create profile if name provided
+                    if (fullName) {
+                        await sb
+                            .from('user_profiles')
+                            .insert({
+                                user_id: newUser.id,
+                                full_name: fullName
+                            });
+                    }
+                }
+
+                userModal.classList.add('hidden');
+                loadUsers();
+                alert('Usuário salvo com sucesso!');
+            } catch (error) {
+                console.error('Error saving user:', error);
+                alert('Erro ao salvar usuário: ' + error.message);
+            }
+        });
+
+        // Search
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            const searchTerm = e.target.value.toLowerCase();
+            displayUsers(allUsers, searchTerm);
+        });
+
+        // Load users
+        async function loadUsers() {
+            try {
+                const sb = initSupabase();
+                const { data: users, error } = await sb
+                    .from('users')
+                    .select(`
+                        *,
+                        user_profiles (full_name)
+                    `)
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                allUsers = users || [];
+                displayUsers(allUsers);
+            } catch (error) {
+                console.error('Error loading users:', error);
+                document.getElementById('usersContainer').innerHTML = '<p class="error-message">Erro ao carregar usuários.</p>';
+            }
+        }
+
+        function displayUsers(users, searchTerm = '') {
+            const container = document.getElementById('usersContainer');
+
+            let filteredUsers = users;
+            if (searchTerm) {
+                filteredUsers = users.filter(user => {
+                    const fullName = user.user_profiles?.full_name || '';
+                    const email = user.email || '';
+                    return fullName.toLowerCase().includes(searchTerm) ||
+                           email.toLowerCase().includes(searchTerm);
+                });
+            }
+
+            if (filteredUsers.length === 0) {
+                container.innerHTML = '<p class="no-data">Nenhum usuário encontrado.</p>';
+                return;
+            }
+
+            const userTypeLabels = {
+                student: '👨‍🎓 Aluno',
+                mentor_marcos: '👨‍💼 Mentor - Marcos',
+                mentor_iria: '👩‍⚕️ Mentor - Dra. Iria',
+                mentor_guilherme: '👨‍🏫 Mentor - Guilherme',
+                mentor_romulo: '👨‍🔬 Mentor - Rômulo'
+            };
+
+            container.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nome</th>
+                            <th>Email</th>
+                            <th>Tipo</th>
+                            <th>Status</th>
+                            <th>Senha</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${filteredUsers.map(user => `
+                            <tr>
+                                <td>${user.user_profiles?.full_name || 'Sem nome'}</td>
+                                <td>${user.email}</td>
+                                <td>${userTypeLabels[user.user_type] || user.user_type}</td>
+                                <td>
+                                    ${user.is_active ? '<span class="badge-success">Ativo</span>' : '<span class="badge-danger">Inativo</span>'}
+                                    ${user.first_login ? '<span class="badge-warning">1º Login</span>' : ''}
+                                </td>
+                                <td>
+                                    <code class="password-display">${user.password_hash}</code>
+                                    <button class="btn-icon copy-password" data-password="${user.password_hash}" title="Copiar">📋</button>
+                                </td>
+                                <td class="actions-cell">
+                                    <button class="btn btn-sm btn-secondary edit-user-basic" data-id="${user.id}" title="Editar Login">✏️</button>
+                                    <button class="btn btn-sm btn-secondary edit-user-details" data-id="${user.id}" title="Editar Perfil">📋</button>
+                                    <button class="btn btn-sm btn-secondary change-password" data-id="${user.id}" title="Trocar Senha">🔑</button>
+                                    <button class="btn btn-sm btn-danger delete-user" data-id="${user.id}" data-email="${user.email}" title="Excluir">🗑️</button>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            `;
+
+            attachUserEventListeners();
+        }
+
+        function attachUserEventListeners() {
+            // Copy password
+            document.querySelectorAll('.copy-password').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    navigator.clipboard.writeText(btn.dataset.password);
+                    alert('Senha copiada!');
+                });
+            });
+
+            // Edit user basic
+            document.querySelectorAll('.edit-user-basic').forEach(btn => {
+                btn.addEventListener('click', () => editUserBasic(btn.dataset.id));
+            });
+
+            // Edit user details
+            document.querySelectorAll('.edit-user-details').forEach(btn => {
+                btn.addEventListener('click', () => editUserDetails(btn.dataset.id));
+            });
+
+            // Change password
+            document.querySelectorAll('.change-password').forEach(btn => {
+                btn.addEventListener('click', () => changePassword(btn.dataset.id));
+            });
+
+            // Delete user
+            document.querySelectorAll('.delete-user').forEach(btn => {
+                btn.addEventListener('click', () => deleteUser(btn.dataset.id, btn.dataset.email));
+            });
+        }
+
+        async function editUserBasic(userId) {
+            try {
+                const user = allUsers.find(u => u.id === userId);
+                if (!user) return;
+
+                currentEditUserId = userId;
+                document.getElementById('modalTitle').textContent = 'Editar Membro';
+                document.getElementById('userEmail').value = user.email;
+                document.getElementById('userPassword').value = user.password_hash;
+                document.getElementById('userType').value = user.user_type;
+                document.getElementById('fullName').value = user.user_profiles?.full_name || '';
+                userModal.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error loading user:', error);
+            }
+        }
+
+        async function changePassword(userId) {
+            const newPassword = prompt('Digite a nova senha:');
+            if (!newPassword) return;
+
+            try {
+                const sb = initSupabase();
+                const { error } = await sb
+                    .from('users')
+                    .update({ password_hash: newPassword })
+                    .eq('id', userId);
+
+                if (error) throw error;
+                alert('Senha atualizada com sucesso!');
+                loadUsers();
+            } catch (error) {
+                console.error('Error changing password:', error);
+                alert('Erro ao trocar senha.');
+            }
+        }
+
+        async function deleteUser(userId, userEmail) {
+            if (!confirm(`Tem certeza que deseja excluir o usuário ${userEmail}?\n\nTodos os dados associados serão removidos permanentemente.`)) {
+                return;
+            }
+
+            try {
+                const sb = initSupabase();
+                const { error } = await sb
+                    .from('users')
+                    .delete()
+                    .eq('id', userId);
+
+                if (error) throw error;
+                alert('Usuário excluído com sucesso!');
+                loadUsers();
+            } catch (error) {
+                console.error('Error deleting user:', error);
+                alert('Erro ao excluir usuário: ' + error.message);
+            }
+        }
+
+        function editUserDetails(userId) {
+            window.location.href = `profile.html?user=${userId}`;
+        }
+
+        // Schedule Management
+        async function loadStudentsList() {
+            try {
+                const sb = initSupabase();
+                const { data: students, error } = await sb
+                    .from('users')
+                    .select('id, email, user_profiles(full_name)')
+                    .eq('user_type', 'student')
+                    .order('created_at');
+
+                if (error) throw error;
+
+                allStudents = students || [];
+                const select = document.getElementById('studentSelect');
+                select.innerHTML = '<option value="">Selecione um aluno...</option>' +
+                    students.map(s => `<option value="${s.id}">${s.user_profiles?.full_name || s.email}</option>`).join('');
+            } catch (error) {
+                console.error('Error loading students:', error);
+            }
+        }
+
+        // Parse schedule data
+        document.getElementById('scheduleData').addEventListener('input', (e) => {
+            const data = e.target.value;
+            if (data.trim()) {
+                parseScheduleData(data);
+            } else {
+                document.getElementById('schedulePreview').classList.add('hidden');
+            }
+        });
+
+        function parseScheduleData(data) {
+            try {
+                const lines = data.trim().split('\n');
+                const scheduleItems = [];
+
+                for (let line of lines) {
+                    const parts = line.split('\t');
+                    if (parts.length >= 3) {
+                        scheduleItems.push({
+                            system: parts[0].trim(),
+                            category: parts[1].trim(),
+                            questions: parseInt(parts[2]) || 0
+                        });
+                    }
+                }
+
+                if (scheduleItems.length > 0) {
+                    displaySchedulePreview(scheduleItems);
+                }
+            } catch (error) {
+                console.error('Error parsing schedule:', error);
+            }
+        }
+
+        function displaySchedulePreview(items) {
+            const preview = document.getElementById('schedulePreview');
+            const table = document.getElementById('previewTable');
+
+            table.innerHTML = `
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>System</th>
+                            <th>Category</th>
+                            <th>Questões</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${items.map(item => `
+                            <tr>
+                                <td>${item.system}</td>
+                                <td>${item.category}</td>
+                                <td>${item.questions}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+                <p><strong>Total: ${items.length} itens</strong></p>
+            `;
+
+            preview.classList.remove('hidden');
+        }
+
+        // Save schedule
+        document.getElementById('saveScheduleBtn').addEventListener('click', async () => {
+            const studentId = document.getElementById('studentSelect').value;
+            const data = document.getElementById('scheduleData').value;
+
+            if (!studentId) {
+                alert('Selecione um aluno!');
+                return;
+            }
+
+            if (!data.trim()) {
+                alert('Cole os dados do cronograma!');
+                return;
+            }
+
+            try {
+                const lines = data.trim().split('\n');
+                const scheduleItems = [];
+
+                for (let line of lines) {
+                    const parts = line.split('\t');
+                    if (parts.length >= 3) {
+                        scheduleItems.push({
+                            user_id: studentId,
+                            system_name: parts[0].trim(),
+                            category_name: parts[1].trim(),
+                            questions: parseInt(parts[2]) || 0,
+                            completed: false
+                        });
+                    }
+                }
+
+                if (scheduleItems.length === 0) {
+                    alert('Nenhum item válido encontrado!');
+                    return;
+                }
+
+                // Delete existing schedule for this student
+                const sb = initSupabase();
+                await sb
+                    .from('schedules')
+                    .delete()
+                    .eq('user_id', studentId);
+
+                // Insert new schedule
+                const { error } = await sb
+                    .from('schedules')
+                    .insert(scheduleItems);
+
+                if (error) throw error;
+
+                alert(`Cronograma salvo com sucesso! ${scheduleItems.length} itens adicionados.`);
+                document.getElementById('scheduleData').value = '';
+                document.getElementById('schedulePreview').classList.add('hidden');
+            } catch (error) {
+                console.error('Error saving schedule:', error);
+                alert('Erro ao salvar cronograma: ' + error.message);
+            }
+        });
+
+        // Clear schedule
+        document.getElementById('clearScheduleBtn').addEventListener('click', () => {
+            document.getElementById('scheduleData').value = '';
+            document.getElementById('schedulePreview').classList.add('hidden');
+        });
+
+        // Initial load
+        loadUsers();
+    </script>
+
+    <style>
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            border-bottom: 2px solid var(--color-border);
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            padding: 12px 24px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 500;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--color-primary);
+        }
+
+        .tab-btn.active {
+            color: var(--color-primary);
+            border-bottom-color: var(--color-primary);
+        }
+
+        .tab-content {
+            display: block;
+        }
+
+        .tab-content.hidden {
+            display: none;
+        }
+
+        .data-table {
+            width: 100%;
+            background: white;
+            border-collapse: collapse;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .data-table th {
+            background: var(--color-primary);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-top: 1px solid var(--color-border);
+        }
+
+        .data-table tr:hover {
+            background: var(--color-light-gray);
+        }
+
+        .password-display {
+            background: #f5f5f5;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 13px;
+        }
+
+        .actions-cell {
+            white-space: nowrap;
+        }
+
+        .actions-cell button {
+            margin-right: 5px;
+        }
+
+        .badge-success {
+            background: #4caf50;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .badge-danger {
+            background: #f44336;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .badge-warning {
+            background: #ff9800;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .schedule-manager {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 25px;
+        }
+
+        .schedule-preview {
+            margin-top: 30px;
+            padding: 20px;
+            background: var(--color-light-gray);
+            border-radius: 8px;
+        }
+
+        .schedule-preview h4 {
+            margin-top: 0;
+            color: var(--color-primary);
+        }
+
+        .schedule-preview .data-table {
+            margin-top: 15px;
+        }
+    </style>
+</body>
+</html>

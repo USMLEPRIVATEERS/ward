@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ward Academy - Alunos</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <header>
+        <div class="header-container">
+            <h1>Ward Academy</h1>
+            <nav>
+                <a href="dashboard.html">Dashboard</a>
+                <a href="students.html" class="active">Alunos</a>
+                <a href="links.html">Links</a>
+                <a href="blog.html">Blog</a>
+                <a href="research.html">Pesquisa</a>
+                <a href="#" id="logoutBtn">Sair</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="container">
+        <div class="page-header">
+            <h2>Alunos da Ward Academy</h2>
+            <div class="search-bar">
+                <input type="text" id="searchInput" placeholder="Buscar aluno por nome ou email...">
+            </div>
+        </div>
+
+        <!-- Students List -->
+        <div id="studentsContainer" class="students-grid">
+            <!-- Students will be loaded here -->
+        </div>
+    </main>
+
+    <!-- Student Details Modal -->
+    <div id="studentModal" class="modal hidden">
+        <div class="modal-content modal-large">
+            <span class="close">&times;</span>
+            <h3 id="studentName">Detalhes do Aluno</h3>
+
+            <div id="studentDetails" class="student-details">
+                <!-- Student details will be loaded here -->
+            </div>
+
+            <div class="modal-actions">
+                <button type="button" class="btn btn-secondary close-modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script>
+        let currentUser = getCurrentUser();
+        let isMentor = false;
+        let allStudents = [];
+        let searchTerm = '';
+
+        if (!currentUser) {
+            window.location.href = 'index.html';
+        }
+
+        // Check if user is mentor
+        isMentor = currentUser.user_type && currentUser.user_type.startsWith('mentor_');
+
+        if (!isMentor) {
+            alert('Acesso negado. Esta página é apenas para mentores.');
+            window.location.href = 'dashboard.html';
+        }
+
+        // Logout
+        document.getElementById('logoutBtn').addEventListener('click', (e) => {
+            e.preventDefault();
+            logout();
+            window.location.href = 'index.html';
+        });
+
+        // Search
+        document.getElementById('searchInput').addEventListener('input', (e) => {
+            searchTerm = e.target.value.toLowerCase();
+            displayStudents(allStudents);
+        });
+
+        // Modal
+        const modal = document.getElementById('studentModal');
+        const closeBtn = document.querySelector('.close');
+        const closeModalBtn = document.querySelector('.close-modal');
+
+        closeBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+
+        closeModalBtn.addEventListener('click', () => {
+            modal.classList.add('hidden');
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.add('hidden');
+            }
+        });
+
+        // Load students
+        async function loadStudents() {
+            try {
+                const sb = initSupabase();
+                const { data: students, error } = await sb
+                    .from('users')
+                    .select(`
+                        *,
+                        user_profiles (*)
+                    `)
+                    .eq('user_type', 'student')
+                    .order('created_at', { ascending: false });
+
+                if (error) throw error;
+
+                allStudents = students || [];
+                displayStudents(allStudents);
+            } catch (error) {
+                console.error('Error loading students:', error);
+                document.getElementById('studentsContainer').innerHTML = '<p class="error-message">Erro ao carregar alunos.</p>';
+            }
+        }
+
+        function displayStudents(students) {
+            const container = document.getElementById('studentsContainer');
+
+            // Filter by search term
+            let filteredStudents = students;
+            if (searchTerm) {
+                filteredStudents = students.filter(student => {
+                    const fullName = student.user_profiles?.full_name || '';
+                    const email = student.email || '';
+                    return fullName.toLowerCase().includes(searchTerm) ||
+                           email.toLowerCase().includes(searchTerm);
+                });
+            }
+
+            if (filteredStudents.length === 0) {
+                container.innerHTML = '<p class="no-data">Nenhum aluno encontrado.</p>';
+                return;
+            }
+
+            container.innerHTML = filteredStudents.map(student => {
+                const fullName = student.user_profiles?.full_name || 'Sem nome';
+                const email = student.email;
+                const createdDate = new Date(student.created_at).toLocaleDateString('pt-BR');
+                const isActive = student.is_active;
+                const firstLogin = student.first_login;
+
+                return `
+                    <div class="student-card ${!isActive ? 'inactive' : ''}">
+                        <div class="student-header">
+                            <h3>${fullName}</h3>
+                            ${!isActive ? '<span class="badge-inactive">Inativo</span>' : ''}
+                            ${firstLogin ? '<span class="badge-warning">Primeiro Login Pendente</span>' : ''}
+                        </div>
+                        <div class="student-info">
+                            <p><strong>Email:</strong> ${email}</p>
+                            <p><strong>Cadastrado em:</strong> ${createdDate}</p>
+                        </div>
+                        <button class="btn btn-primary btn-block view-student" data-id="${student.id}">
+                            Ver Detalhes
+                        </button>
+                    </div>
+                `;
+            }).join('');
+
+            // Attach event listeners
+            document.querySelectorAll('.view-student').forEach(btn => {
+                btn.addEventListener('click', () => viewStudentDetails(btn.dataset.id));
+            });
+        }
+
+        async function viewStudentDetails(studentId) {
+            try {
+                const sb = initSupabase();
+
+                // Load all student data
+                const [
+                    userResult,
+                    profileResult,
+                    usmleResult,
+                    uworldResult,
+                    englishResult,
+                    ankiResult,
+                    researchExpResult,
+                    rotationsResult,
+                    backgroundResult,
+                    landmarksResult,
+                    diaryResult,
+                    uworldDiaryResult
+                ] = await Promise.all([
+                    sb.from('users').select('*').eq('id', studentId).single(),
+                    sb.from('user_profiles').select('*').eq('user_id', studentId).maybeSingle(),
+                    sb.from('usmle_info').select('*').eq('user_id', studentId).maybeSingle(),
+                    sb.from('uworld_info').select('*').eq('user_id', studentId).maybeSingle(),
+                    sb.from('english_proficiency').select('*').eq('user_id', studentId).maybeSingle(),
+                    sb.from('anki_info').select('*').eq('user_id', studentId).maybeSingle(),
+                    sb.from('research_experience').select('*').eq('user_id', studentId).maybeSingle(),
+                    sb.from('clinical_rotations').select('*').eq('user_id', studentId),
+                    sb.from('personal_background').select('*').eq('user_id', studentId).maybeSingle(),
+                    sb.from('landmarks').select('*').eq('user_id', studentId).order('display_order'),
+                    sb.from('study_diary').select('*').eq('user_id', studentId).order('entry_date', { ascending: false }).limit(10),
+                    sb.from('uworld_diary').select('*').eq('user_id', studentId).order('entry_date', { ascending: false }).limit(10)
+                ]);
+
+                const user = userResult.data;
+                const profile = profileResult.data;
+                const usmle = usmleResult.data;
+                const uworld = uworldResult.data;
+                const english = englishResult.data;
+                const anki = ankiResult.data;
+                const research = researchExpResult.data;
+                const rotations = rotationsResult.data;
+                const background = backgroundResult.data;
+                const landmarks = landmarksResult.data;
+                const diary = diaryResult.data;
+                const uworldDiary = uworldDiaryResult.data;
+
+                // Display details
+                document.getElementById('studentName').textContent = profile?.full_name || user.email;
+
+                let detailsHTML = '<div class="details-sections">';
+
+                // Personal Info
+                detailsHTML += `
+                    <div class="detail-section">
+                        <h4>📋 Informações Pessoais</h4>
+                        <div class="detail-grid">
+                            <div><strong>Nome Completo:</strong> ${profile?.full_name || 'Não informado'}</div>
+                            <div><strong>Email:</strong> ${user.email}</div>
+                            <div><strong>CPF:</strong> ${profile?.cpf || 'Não informado'}</div>
+                            <div><strong>ORCID:</strong> ${profile?.orcid || 'Não informado'}</div>
+                            <div><strong>Faculdade:</strong> ${profile?.medical_school || 'Não informado'}</div>
+                            <div><strong>Formatura:</strong> ${profile?.medical_graduation_date ? new Date(profile.medical_graduation_date).toLocaleDateString('pt-BR') : 'Não informado'}</div>
+                            <div><strong>Especialidade Atual:</strong> ${profile?.current_specialty || 'Não informado'}</div>
+                            <div><strong>Especialidade Desejada (EUA):</strong> ${profile?.desired_us_specialty || 'Não informado'}</div>
+                        </div>
+                    </div>
+                `;
+
+                // USMLE Info
+                if (usmle) {
+                    detailsHTML += `
+                        <div class="detail-section">
+                            <h4>🎓 USMLE</h4>
+                            <div class="detail-grid">
+                                <div><strong>Pathway:</strong> ${usmle.pathway === 'traditional' ? 'Tradicional' : 'Alternativo'}</div>
+                                <div><strong>Etapa Atual:</strong> ${usmle.current_stage || 'Não informado'}</div>
+                                <div><strong>Visto Americano:</strong> ${usmle.has_us_visa ? `Sim (${usmle.visa_type})` : 'Não'}</div>
+                                <div><strong>Próxima Prova:</strong> ${usmle.next_exam_date ? new Date(usmle.next_exam_date).toLocaleDateString('pt-BR') : 'Não informado'}</div>
+                                <div><strong>First Pass:</strong> ${usmle.first_pass_months || 0} meses</div>
+                                <div><strong>Second Pass:</strong> ${usmle.second_pass_months || 0} meses</div>
+                                <div><strong>Dedicated:</strong> ${usmle.dedicated_months || 0} meses</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // UWorld Info
+                if (uworld) {
+                    detailsHTML += `
+                        <div class="detail-section">
+                            <h4>📚 UWorld</h4>
+                            <div class="detail-grid">
+                                <div><strong>Comprado:</strong> ${uworld.purchased ? 'Sim' : 'Não'}</div>
+                                <div><strong>Ativado:</strong> ${uworld.activated ? 'Sim' : 'Não'}</div>
+                                ${uworld.activated ? `
+                                    <div><strong>Vencimento:</strong> ${new Date(uworld.expiration_date).toLocaleDateString('pt-BR')}</div>
+                                    <div><strong>Questões Feitas:</strong> ${uworld.total_questions_done || 0}</div>
+                                    <div><strong>% Geral:</strong> ${uworld.overall_percentage || 0}%</div>
+                                    <div><strong>Menor %:</strong> ${uworld.lowest_percentage || 0}% (${uworld.lowest_percentage_system || 'N/A'})</div>
+                                    <div><strong>Maior %:</strong> ${uworld.highest_percentage || 0}% (${uworld.highest_percentage_system || 'N/A'})</div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // English Proficiency
+                if (english) {
+                    detailsHTML += `
+                        <div class="detail-section">
+                            <h4>🇺🇸 Inglês</h4>
+                            <div class="detail-grid">
+                                <div><strong>Leitura:</strong> ${english.reading_comprehension || 'Não informado'}</div>
+                                <div><strong>Vocabulário:</strong> ${english.vocabulary_level || 'Não informado'}</div>
+                                <div><strong>Escuta:</strong> ${english.listening_comprehension || 'Não informado'}</div>
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Anki Info
+                if (anki) {
+                    detailsHTML += `
+                        <div class="detail-section">
+                            <h4>🃏 Anki</h4>
+                            <div class="detail-grid">
+                                <div><strong>Usa Anki:</strong> ${anki.used ? 'Sim' : 'Não'}</div>
+                                ${anki.used ? `
+                                    <div><strong>Usa AnKing:</strong> ${anki.uses_anking ? 'Sim' : 'Não'}</div>
+                                    <div><strong>Frequência:</strong> ${anki.usage_frequency || 'Não informado'}</div>
+                                    <div><strong>Cards/dia:</strong> ${anki.average_cards_per_day || 0}</div>
+                                    <div><strong>Dispositivo Mais Usado:</strong> ${anki.most_used_device || 'Não informado'}</div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Research
+                if (research) {
+                    detailsHTML += `
+                        <div class="detail-section">
+                            <h4>🔬 Pesquisa</h4>
+                            <div class="detail-grid">
+                                <div><strong>Nível de Experiência:</strong> ${research.experience_level || 'Não informado'}</div>
+                                <div><strong>Quer Fazer Pesquisa:</strong> ${research.wants_to_research || 'Não informado'}</div>
+                                <div><strong>Instituição Atual:</strong> ${research.research_institution || 'Não informado'}</div>
+                                ${research.research_interests ? `
+                                    <div class="full-width"><strong>Interesses:</strong> ${research.research_interests.join(', ')}</div>
+                                ` : ''}
+                                ${research.target_institutions ? `
+                                    <div class="full-width"><strong>Instituições Alvo:</strong> ${research.target_institutions.join(', ')}</div>
+                                ` : ''}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Landmarks
+                if (landmarks && landmarks.length > 0) {
+                    const completedLandmarks = landmarks.filter(l => l.is_completed).length;
+                    const totalLandmarks = landmarks.length;
+
+                    detailsHTML += `
+                        <div class="detail-section">
+                            <h4>🎯 Landmarks (${completedLandmarks}/${totalLandmarks} concluídos)</h4>
+                            <div class="landmarks-list">
+                                ${landmarks.map(landmark => `
+                                    <div class="landmark-item ${landmark.is_completed ? 'completed' : ''} ${landmark.is_urgent ? 'urgent' : ''}">
+                                        <span class="landmark-status">${landmark.is_completed ? '✅' : '⏳'}</span>
+                                        <div class="landmark-content">
+                                            <strong>${landmark.title}</strong>
+                                            ${landmark.is_urgent ? ' <span class="badge-urgent">URGENTE</span>' : ''}
+                                            ${landmark.completed_date ? `<br><small>Concluído em: ${new Date(landmark.completed_date).toLocaleDateString('pt-BR')}</small>` : ''}
+                                            ${landmark.observations ? `<br><small>${landmark.observations}</small>` : ''}
+                                        </div>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // Study Diary
+                if (diary && diary.length > 0) {
+                    detailsHTML += `
+                        <div class="detail-section">
+                            <h4>📔 Diário de Estudos (últimas 10 entradas)</h4>
+                            <div class="diary-list">
+                                ${diary.map(entry => `
+                                    <div class="diary-entry">
+                                        <strong>${new Date(entry.entry_date).toLocaleDateString('pt-BR')}</strong>
+                                        <p>${entry.entry_text}</p>
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                // UWorld Diary
+                if (uworldDiary && uworldDiary.length > 0) {
+                    detailsHTML += `
+                        <div class="detail-section">
+                            <h4>📊 Diário UWorld (últimas 10 entradas)</h4>
+                            <div class="diary-list">
+                                ${uworldDiary.map(entry => `
+                                    <div class="diary-entry">
+                                        <strong>${new Date(entry.entry_date).toLocaleDateString('pt-BR')}</strong>
+                                        <p>Questões: ${entry.questions_done} | Acertos: ${entry.questions_correct} | Tempo: ${entry.time_spent_minutes}min</p>
+                                        ${entry.system_name ? `<p>System: ${entry.system_name}</p>` : ''}
+                                        ${entry.difficulties ? `<p>Dificuldades: ${entry.difficulties}</p>` : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    `;
+                }
+
+                detailsHTML += '</div>';
+
+                document.getElementById('studentDetails').innerHTML = detailsHTML;
+                modal.classList.remove('hidden');
+            } catch (error) {
+                console.error('Error loading student details:', error);
+                alert('Erro ao carregar detalhes do aluno.');
+            }
+        }
+
+        // Initial load
+        loadStudents();
+    </script>
+
+    <style>
+        .students-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .student-card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 20px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .student-card:hover {
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .student-card.inactive {
+            opacity: 0.6;
+            background: #f5f5f5;
+        }
+
+        .student-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 15px;
+        }
+
+        .student-header h3 {
+            margin: 0;
+            font-size: 18px;
+            color: var(--color-primary);
+        }
+
+        .badge-inactive {
+            background: #f44336;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+
+        .badge-warning {
+            background: #ff9800;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            display: block;
+            margin-top: 5px;
+        }
+
+        .student-info p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .detail-section {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .detail-section h4 {
+            margin: 0 0 15px 0;
+            color: var(--color-primary);
+            border-bottom: 2px solid var(--color-primary);
+            padding-bottom: 10px;
+        }
+
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+        }
+
+        .detail-grid .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .landmarks-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .landmark-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 10px;
+            background: var(--color-light-gray);
+            border-radius: 4px;
+            border-left: 4px solid #ccc;
+        }
+
+        .landmark-item.completed {
+            border-left-color: #4caf50;
+            background: #f1f8f4;
+        }
+
+        .landmark-item.urgent {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+
+        .landmark-status {
+            font-size: 20px;
+        }
+
+        .landmark-content {
+            flex: 1;
+        }
+
+        .badge-urgent {
+            background: #f44336;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+
+        .diary-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .diary-entry {
+            background: var(--color-light-gray);
+            padding: 10px;
+            border-radius: 4px;
+        }
+
+        .diary-entry strong {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--color-primary);
+        }
+
+        .diary-entry p {
+            margin: 5px 0;
+            font-size: 14px;
+        }
+
+        .modal-large {
+            max-width: 900px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .details-sections {
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+    </style>
+</body>
+</html>
