@@ -7,18 +7,7 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <header>
-        <div class="header-container">
-            <h1>Ward Academy</h1>
-            <nav>
-                <a href="dashboard.html">Dashboard</a>
-                <a href="links.html" class="active">Links</a>
-                <a href="blog.html">Blog</a>
-                <a href="research.html">Pesquisa</a>
-                <a href="#" id="logoutBtn">Sair</a>
-            </nav>
-        </div>
-    </header>
+    <div id="header-placeholder"></div>
 
     <main class="container">
         <div class="page-header">
@@ -86,23 +75,20 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
+    <script src="js/header.js"></script>
     <script>
         let currentLinkId = null;
         let currentFilter = 'all';
         let searchTerm = '';
 
         // Check authentication
-        const currentUser = getCurrentUser();
+        let currentUser = getCurrentUser();
         if (!currentUser) {
             window.location.href = 'index.html';
         }
 
-        // Logout handler
-        document.getElementById('logoutBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            logout();
-            window.location.href = 'index.html';
-        });
+        // Initialize header
+        initHeader('links');
 
         // Modal controls
         const modal = document.getElementById('linkModal');

@@ -7,20 +7,7 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <header>
-        <div class="header-container">
-            <h1>Ward Academy - Admin</h1>
-            <nav>
-                <a href="dashboard.html">Dashboard</a>
-                <a href="admin.html" class="active">Admin</a>
-                <a href="students.html">Alunos</a>
-                <a href="links.html">Links</a>
-                <a href="blog.html">Blog</a>
-                <a href="research.html">Pesquisa</a>
-                <a href="#" id="logoutBtn">Sair</a>
-            </nav>
-        </div>
-    </header>
+    <div id="header-placeholder"></div>
 
     <main class="container">
         <div class="page-header">
@@ -128,6 +115,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
+    <script src="js/header.js"></script>
     <script>
         let currentUser = getCurrentUser();
         let currentEditUserId = null;
@@ -137,6 +125,9 @@
         if (!currentUser) {
             window.location.href = 'index.html';
         }
+
+        // Initialize header
+        initHeader('admin');
 
         // Check if user is Marcos (admin)
         if (currentUser.user_type !== 'mentor_marcos') {

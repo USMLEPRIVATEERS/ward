@@ -7,18 +7,7 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <header>
-        <div class="header-container">
-            <h1>Ward Academy</h1>
-            <nav>
-                <a href="dashboard.html">Dashboard</a>
-                <a href="links.html">Links</a>
-                <a href="blog.html">Blog</a>
-                <a href="research.html" class="active">Pesquisa</a>
-                <a href="#" id="logoutBtn">Sair</a>
-            </nav>
-        </div>
-    </header>
+    <div id="header-placeholder"></div>
 
     <main class="container">
         <div class="page-header">
@@ -152,7 +141,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
+    <script src="js/header.js"></script>
     <script>
+        // Initialize header
+        initHeader('research');
+
         const RESEARCH_STAGES = [
             "NOVA TAREFA", "TESTANDO IDEIA", "ENCONTRANDO ESTUDOS", "ESTRATEGIA DE BUSCA",
             "VALIDANDO IDEIA", "ESCREVER PROTOCOLO", "EXPORTAR DE DATABASES", "DESDUPLICAR",

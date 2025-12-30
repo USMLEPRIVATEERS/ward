@@ -7,23 +7,16 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <header>
-        <div class="container">
-            <div class="logo">Ward Academy</div>
-            <nav id="mainNav">
-                <!-- Navigation will be populated by JavaScript based on user type -->
-            </nav>
-        </div>
-    </header>
+    <div id="header-placeholder"></div>
 
-    <div class="container">
+    <main class="container">
         <h1>Dashboard</h1>
         <p id="welcomeMessage">Bem-vindo(a)!</p>
 
         <div id="dashboardContent">
             <!-- Content will be loaded based on user type -->
         </div>
-    </div>
+    </main>
 
     <!-- Daily Update Modal -->
     <div id="dailyUpdateModal" class="modal">
@@ -102,18 +95,23 @@
     <!-- Supabase Client Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
+    <script src="js/header.js"></script>
     <script>
-        // Require authentication
-        requireAuth();
+        let currentUser = getCurrentUser();
 
-        const currentUser = getCurrentUser();
-        const userType = getUserType();
-        const userId = getUserId();
+        if (!currentUser) {
+            window.location.href = 'index.html';
+        }
+
+        const userType = currentUser.user_type;
+        const userId = currentUser.id;
+
+        // Initialize header
+        initHeader('dashboard');
 
         // Initialize dashboard
         async function initDashboard() {
             await loadUserProfile();
-            setupNavigation();
             await loadDashboardContent();
 
             // Check if user completed questionnaire
@@ -132,62 +130,21 @@
         }
 
         async function loadUserProfile() {
-            const profile = await getUserProfile(userId);
-            if (profile.success && profile.data) {
-                document.getElementById('welcomeMessage').textContent =
-                    `Bem-vindo(a), ${profile.data.full_name || currentUser.email}!`;
-            }
-        }
+            try {
+                const sb = initSupabase();
+                const { data: profile } = await sb
+                    .from('user_profiles')
+                    .select('*')
+                    .eq('user_id', userId)
+                    .single();
 
-        function setupNavigation() {
-            const nav = document.getElementById('mainNav');
-            let navItems = [];
-
-            if (userType === 'student') {
-                navItems = [
-                    { text: 'Dashboard', href: 'dashboard.html', active: true },
-                    { text: 'Perfil', href: 'profile.html' },
-                    { text: 'Questionário', href: 'questionnaire.html' },
-                    { text: 'Cronograma', href: 'schedule.html' },
-                    { text: 'Landmarks', href: 'landmarks.html' },
-                    { text: 'Links', href: 'links.html' },
-                    { text: 'Blog', href: 'blog.html' },
-                    { text: 'Pesquisa', href: 'research.html' },
-                    { text: 'Sair', href: '#', onclick: 'logout()' }
-                ];
-            } else if (userType.startsWith('mentor_')) {
-                navItems = [
-                    { text: 'Dashboard', href: 'dashboard.html', active: true },
-                    { text: 'Alunos', href: 'students.html' },
-                    { text: 'Links', href: 'links.html' },
-                    { text: 'Blog', href: 'blog.html' },
-                    { text: 'Pesquisa', href: 'research.html' },
-                    { text: 'Sair', href: '#', onclick: 'logout()' }
-                ];
-
-                if (userType === 'mentor_marcos') {
-                    navItems.splice(1, 0, { text: 'Admin', href: 'admin.html' });
+                if (profile) {
+                    document.getElementById('welcomeMessage').textContent =
+                        `Bem-vindo(a), ${profile.full_name || currentUser.email}!`;
                 }
+            } catch (error) {
+                console.error('Error loading profile:', error);
             }
-
-            const navList = document.createElement('ul');
-            navItems.forEach(item => {
-                const li = document.createElement('li');
-                const a = document.createElement('a');
-                a.textContent = item.text;
-                a.href = item.href;
-                if (item.active) a.classList.add('active');
-                if (item.onclick) {
-                    a.onclick = (e) => {
-                        e.preventDefault();
-                        eval(item.onclick);
-                    };
-                }
-                li.appendChild(a);
-                navList.appendChild(li);
-            });
-
-            nav.appendChild(navList);
         }
 
         async function loadDashboardContent() {
@@ -514,12 +471,215 @@
         }
 
         async function loadMentorData() {
-            // Load pending calls, urgent calls, etc.
-            // This would query landmarks and other data
+            const sb = initSupabase();
+
+            // Load pending calls
             const pendingCallsDiv = document.getElementById('pendingCalls');
             if (pendingCallsDiv) {
-                pendingCallsDiv.innerHTML = '<p>Carregando...</p>';
-                // Implementation would go here
+                try {
+                    const { data: pendingCalls } = await sb
+                        .from('landmarks')
+                        .select(`
+                            *,
+                            user:users!inner(id, email),
+                            profile:user_profiles!inner(full_name)
+                        `)
+                        .eq('completed', false)
+                        .order('scheduled_date', { ascending: true })
+                        .limit(5);
+
+                    if (!pendingCalls || pendingCalls.length === 0) {
+                        pendingCallsDiv.innerHTML = '<p>Nenhuma chamada pendente.</p>';
+                    } else {
+                        pendingCallsDiv.innerHTML = pendingCalls.map(call => `
+                            <div class="mini-call-card">
+                                <strong>${call.profile?.full_name || call.user.email}</strong><br>
+                                <small>${call.landmark_name}</small><br>
+                                ${call.scheduled_date ?
+                                    `<small>📅 ${new Date(call.scheduled_date).toLocaleDateString('pt-BR')}</small>` :
+                                    '<small>Sem data</small>'}
+                            </div>
+                        `).join('');
+                    }
+                } catch (error) {
+                    console.error('Error loading pending calls:', error);
+                    pendingCallsDiv.innerHTML = '<p class="error-message">Erro ao carregar chamadas.</p>';
+                }
+            }
+
+            // Load urgent calls
+            const urgentCallsDiv = document.getElementById('urgentCalls');
+            if (urgentCallsDiv) {
+                try {
+                    const { data: urgentCalls } = await sb
+                        .from('landmarks')
+                        .select(`
+                            *,
+                            user:users!inner(id, email),
+                            profile:user_profiles!inner(full_name)
+                        `)
+                        .eq('is_urgent', true)
+                        .eq('completed', false)
+                        .order('scheduled_date', { ascending: true })
+                        .limit(5);
+
+                    if (!urgentCalls || urgentCalls.length === 0) {
+                        urgentCallsDiv.innerHTML = '<p>Nenhuma chamada urgente.</p>';
+                    } else {
+                        urgentCallsDiv.innerHTML = urgentCalls.map(call => `
+                            <div class="mini-call-card urgent">
+                                <strong>🚨 ${call.profile?.full_name || call.user.email}</strong><br>
+                                <small>${call.landmark_name}</small><br>
+                                ${call.scheduled_date ?
+                                    `<small>📅 ${new Date(call.scheduled_date).toLocaleDateString('pt-BR')}</small>` :
+                                    '<small>Sem data</small>'}
+                            </div>
+                        `).join('');
+                    }
+                } catch (error) {
+                    console.error('Error loading urgent calls:', error);
+                    urgentCallsDiv.innerHTML = '<p class="error-message">Erro ao carregar chamadas urgentes.</p>';
+                }
+            }
+
+            // Load recent updates (for timeline)
+            const recentUpdatesDiv = document.getElementById('recentUpdates');
+            if (recentUpdatesDiv) {
+                try {
+                    const { data: updates } = await sb
+                        .from('daily_updates')
+                        .select(`
+                            *,
+                            user:users!inner(id, email),
+                            profile:user_profiles!inner(full_name)
+                        `)
+                        .order('created_at', { ascending: false })
+                        .limit(5);
+
+                    if (!updates || updates.length === 0) {
+                        recentUpdatesDiv.innerHTML = '<p>Nenhuma atualização recente.</p>';
+                    } else {
+                        recentUpdatesDiv.innerHTML = updates.map(update => `
+                            <div class="update-card">
+                                <strong>${update.profile?.full_name || update.user.email}</strong>
+                                <small style="float: right;">${new Date(update.created_at).toLocaleDateString('pt-BR')}</small><br>
+                                ${update.update_text || `Status: ${update.status}`}
+                            </div>
+                        `).join('');
+                    }
+                } catch (error) {
+                    console.error('Error loading updates:', error);
+                    recentUpdatesDiv.innerHTML = '<p class="error-message">Erro ao carregar atualizações.</p>';
+                }
+            }
+
+            // Load timeline (for Iria and Guilherme)
+            const timelineDiv = document.getElementById('timeline');
+            if (timelineDiv) {
+                await loadTimeline(timelineDiv);
+            }
+        }
+
+        async function loadTimeline(container) {
+            const sb = initSupabase();
+
+            try {
+                // Get various activities: diary entries, landmark completions, daily updates
+                const [diaryEntries, landmarkCompletions, dailyUpdates] = await Promise.all([
+                    // Study diary entries
+                    sb.from('study_diary')
+                        .select(`
+                            *,
+                            user:users!inner(id, email),
+                            profile:user_profiles!inner(full_name)
+                        `)
+                        .order('entry_date', { ascending: false })
+                        .limit(10),
+
+                    // Recently completed landmarks
+                    sb.from('landmarks')
+                        .select(`
+                            *,
+                            user:users!inner(id, email),
+                            profile:user_profiles!inner(full_name)
+                        `)
+                        .eq('completed', true)
+                        .not('completion_date', 'is', null)
+                        .order('completion_date', { ascending: false })
+                        .limit(10),
+
+                    // Daily updates
+                    sb.from('daily_updates')
+                        .select(`
+                            *,
+                            user:users!inner(id, email),
+                            profile:user_profiles!inner(full_name)
+                        `)
+                        .order('created_at', { ascending: false })
+                        .limit(10)
+                ]);
+
+                // Combine and sort all activities
+                const allActivities = [];
+
+                if (diaryEntries.data) {
+                    diaryEntries.data.forEach(entry => {
+                        allActivities.push({
+                            type: 'diary',
+                            date: new Date(entry.entry_date),
+                            userName: entry.profile?.full_name || entry.user.email,
+                            content: entry.entry_text,
+                            icon: '📝'
+                        });
+                    });
+                }
+
+                if (landmarkCompletions.data) {
+                    landmarkCompletions.data.forEach(landmark => {
+                        allActivities.push({
+                            type: 'landmark',
+                            date: new Date(landmark.completion_date),
+                            userName: landmark.profile?.full_name || landmark.user.email,
+                            content: `Completou: ${landmark.landmark_name}`,
+                            icon: '✅'
+                        });
+                    });
+                }
+
+                if (dailyUpdates.data) {
+                    dailyUpdates.data.forEach(update => {
+                        allActivities.push({
+                            type: 'update',
+                            date: new Date(update.created_at),
+                            userName: update.profile?.full_name || update.user.email,
+                            content: update.update_text || `Status: ${update.status}`,
+                            icon: update.status === 'need_help' ? '🆘' : '📊'
+                        });
+                    });
+                }
+
+                // Sort by date (most recent first)
+                allActivities.sort((a, b) => b.date - a.date);
+
+                if (allActivities.length === 0) {
+                    container.innerHTML = '<p>Nenhuma atividade recente.</p>';
+                } else {
+                    container.innerHTML = allActivities.slice(0, 20).map(activity => `
+                        <div class="timeline-item">
+                            <div class="timeline-icon">${activity.icon}</div>
+                            <div class="timeline-content">
+                                <div class="timeline-header">
+                                    <strong>${activity.userName}</strong>
+                                    <span class="timeline-date">${activity.date.toLocaleDateString('pt-BR')} ${activity.date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                </div>
+                                <div class="timeline-text">${activity.content}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (error) {
+                console.error('Error loading timeline:', error);
+                container.innerHTML = '<p class="error-message">Erro ao carregar linha do tempo.</p>';
             }
         }
 
@@ -621,5 +781,84 @@
         // Initialize dashboard on load
         initDashboard();
     </script>
+
+    <style>
+        .mini-call-card {
+            background: var(--color-light-gray);
+            border-left: 4px solid var(--color-primary);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+        }
+
+        .mini-call-card.urgent {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+
+        .update-card {
+            background: var(--color-light-gray);
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border-left: 3px solid var(--color-secondary);
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 15px;
+            padding: 15px;
+            border-bottom: 1px solid var(--color-border);
+        }
+
+        .timeline-item:last-child {
+            border-bottom: none;
+        }
+
+        .timeline-icon {
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .timeline-content {
+            flex: 1;
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .timeline-date {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .timeline-text {
+            color: #333;
+            line-height: 1.5;
+        }
+
+        #timeline {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .mt-4 {
+            margin-top: 2rem;
+        }
+
+        .card-header {
+            border-bottom: 1px solid var(--color-border);
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+
+        .card-title {
+            margin: 0;
+            color: var(--color-primary);
+        }
+    </style>
 </body>
 </html>

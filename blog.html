@@ -7,18 +7,7 @@
     <link rel="stylesheet" href="css/styles.css">
 </head>
 <body>
-    <header>
-        <div class="header-container">
-            <h1>Ward Academy</h1>
-            <nav>
-                <a href="dashboard.html">Dashboard</a>
-                <a href="links.html">Links</a>
-                <a href="blog.html" class="active">Blog</a>
-                <a href="research.html">Pesquisa</a>
-                <a href="#" id="logoutBtn">Sair</a>
-            </nav>
-        </div>
-    </header>
+    <div id="header-placeholder"></div>
 
     <main class="container">
         <div class="page-header">
@@ -74,6 +63,7 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
+    <script src="js/header.js"></script>
     <script>
         let currentPostId = null;
         let currentUser = getCurrentUser();
@@ -84,6 +74,9 @@
             window.location.href = 'index.html';
         }
 
+        // Initialize header
+        initHeader('blog');
+
         // Check if user is mentor
         isMentor = currentUser.user_type && currentUser.user_type.startsWith('mentor_');
         if (isMentor) {
@@ -93,13 +86,6 @@
         // Update character limit display
         const charLimitSpan = document.getElementById('charLimit');
         charLimitSpan.textContent = isMentor ? '' : ` / ${maxChars}`;
-
-        // Logout handler
-        document.getElementById('logoutBtn').addEventListener('click', (e) => {
-            e.preventDefault();
-            logout();
-            window.location.href = 'index.html';
-        });
 
         // New post button
         const newPostBtn = document.getElementById('newPostBtn');

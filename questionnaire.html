@@ -333,10 +333,304 @@
             </div>
         </div>
 
-        <!-- Continue with remaining pages... -->
+        <!-- PAGE 4: English Proficiency -->
+        <div id="page4" class="question-page">
+            <div class="card">
+                <h2>Proficiência em Inglês</h2>
+
+                <div class="form-group">
+                    <label>Como você avalia seu inglês? *</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="englishBasic" name="englishLevel" value="basic">
+                            <label for="englishBasic">Básico</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="englishIntermediate" name="englishLevel" value="intermediate">
+                            <label for="englishIntermediate">Intermediário</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="englishAdvanced" name="englishLevel" value="advanced">
+                            <label for="englishAdvanced">Avançado</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="englishFluent" name="englishLevel" value="fluent">
+                            <label for="englishFluent">Fluente</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Já fez OET? *</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="oetYes" name="oetTaken" value="yes">
+                            <label for="oetYes">Sim</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="oetNo" name="oetTaken" value="no">
+                            <label for="oetNo">Não</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group hidden" id="oetScoresGroup">
+                    <h3>Notas do OET</h3>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="oetListening">Listening</label>
+                            <input type="number" id="oetListening" min="0" max="500">
+                        </div>
+                        <div class="form-group">
+                            <label for="oetReading">Reading</label>
+                            <input type="number" id="oetReading" min="0" max="500">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="oetWriting">Writing</label>
+                            <input type="number" id="oetWriting" min="0" max="500">
+                        </div>
+                        <div class="form-group">
+                            <label for="oetSpeaking">Speaking</label>
+                            <input type="number" id="oetSpeaking" min="0" max="500">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Está fazendo aulas de inglês? *</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="englishClassesYes" name="takingClasses" value="yes">
+                            <label for="englishClassesYes">Sim</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="englishClassesNo" name="takingClasses" value="no">
+                            <label for="englishClassesNo">Não</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group hidden" id="englishSchoolGroup">
+                    <label for="englishSchool">Qual escola?</label>
+                    <input type="text" id="englishSchool">
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="previousPage(4)">Anterior</button>
+                    <button class="btn btn-secondary" onclick="saveToDashboard()">Salvar e ir para Dashboard</button>
+                    <button class="btn btn-primary" onclick="nextPage(4)">Próxima</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 5: Anki -->
+        <div id="page5" class="question-page">
+            <div class="card">
+                <h2>Anki</h2>
+
+                <div class="form-group">
+                    <label>Usa Anki? *</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="ankiYes" name="usesAnki" value="yes">
+                            <label for="ankiYes">Sim</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="ankiNo" name="usesAnki" value="no">
+                            <label for="ankiNo">Não</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="ankiDetailsGroup" class="hidden">
+                    <div class="form-group">
+                        <label for="ankiDeck">Qual deck usa?</label>
+                        <input type="text" id="ankiDeck" placeholder="Ex: AnKing, Zanki, etc.">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ankiCardsMature">Quantos cards mature tem?</label>
+                        <input type="number" id="ankiCardsMature" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ankiCardsYoung">Quantos cards young tem?</label>
+                        <input type="number" id="ankiCardsYoung" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ankiCardsNew">Quantos cards new tem?</label>
+                        <input type="number" id="ankiCardsNew" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ankiDailyNew">Quantos cards novos faz por dia?</label>
+                        <input type="number" id="ankiDailyNew" min="0">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ankiRetention">Qual sua taxa de retenção (%)? </label>
+                        <input type="number" id="ankiRetention" min="0" max="100" step="0.1">
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="previousPage(5)">Anterior</button>
+                    <button class="btn btn-secondary" onclick="saveToDashboard()">Salvar e ir para Dashboard</button>
+                    <button class="btn btn-primary" onclick="nextPage(5)">Próxima</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 6: Research -->
+        <div id="page6" class="question-page">
+            <div class="card">
+                <h2>Pesquisa</h2>
+
+                <div class="form-group">
+                    <label>Pretende fazer pesquisa? *</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="researchYes" name="wantsResearch" value="yes">
+                            <label for="researchYes">Sim</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="researchNo" name="wantsResearch" value="no">
+                            <label for="researchNo">Não</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="researchDetailsGroup" class="hidden">
+                    <div class="form-group">
+                        <label>Já tem experiência com pesquisa? *</label>
+                        <div class="radio-group">
+                            <div class="radio-item">
+                                <input type="radio" id="researchExpYes" name="hasResearchExp" value="yes">
+                                <label for="researchExpYes">Sim</label>
+                            </div>
+                            <div class="radio-item">
+                                <input type="radio" id="researchExpNo" name="hasResearchExp" value="no">
+                                <label for="researchExpNo">Não</label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="researchDescription">Descreva brevemente sua experiência com pesquisa</label>
+                        <textarea id="researchDescription" rows="4" placeholder="Ex: Já publiquei artigos, fiz iniciação científica, etc."></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Já tem contatos para pesquisa nos EUA?</label>
+                        <p><small>Adicione os contatos que você já tem. Você pode adicionar mais depois.</small></p>
+                        <button type="button" class="btn btn-sm btn-secondary" id="addContactBtn">➕ Adicionar Contato</button>
+                        <div id="contactsList" class="dynamic-list">
+                            <!-- Contacts will be added here -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="previousPage(6)">Anterior</button>
+                    <button class="btn btn-secondary" onclick="saveToDashboard()">Salvar e ir para Dashboard</button>
+                    <button class="btn btn-primary" onclick="nextPage(6)">Próxima</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 7: Rotations/Observerships -->
+        <div id="page7" class="question-page">
+            <div class="card">
+                <h2>Rotações e Observerships</h2>
+
+                <div class="form-group">
+                    <label>Já fez ou está programado para fazer alguma observership? *</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="observershipYes" name="hasObservership" value="yes">
+                            <label for="observershipYes">Sim</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="observershipNo" name="hasObservership" value="no">
+                            <label for="observershipNo">Não</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="observershipDetailsGroup" class="hidden">
+                    <p><small>Adicione as observerships que já fez ou está programado para fazer.</small></p>
+                    <button type="button" class="btn btn-sm btn-secondary" id="addObservershipBtn">➕ Adicionar Observership</button>
+                    <div id="observershipsList" class="dynamic-list">
+                        <!-- Observerships will be added here -->
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="previousPage(7)">Anterior</button>
+                    <button class="btn btn-secondary" onclick="saveToDashboard()">Salvar e ir para Dashboard</button>
+                    <button class="btn btn-primary" onclick="nextPage(7)">Próxima</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- PAGE 8: Personal Background -->
+        <div id="page8" class="question-page">
+            <div class="card">
+                <h2>Informações Pessoais Adicionais</h2>
+
+                <div class="form-group">
+                    <label>Tem filhos? *</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="childrenYes" name="hasChildren" value="yes">
+                            <label for="childrenYes">Sim</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="childrenNo" name="hasChildren" value="no">
+                            <label for="childrenNo">Não</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group hidden" id="childrenCountGroup">
+                    <label for="childrenCount">Quantos filhos?</label>
+                    <input type="number" id="childrenCount" min="1">
+                </div>
+
+                <div class="form-group">
+                    <label>É casado(a)? *</label>
+                    <div class="radio-group">
+                        <div class="radio-item">
+                            <input type="radio" id="marriedYes" name="isMarried" value="yes">
+                            <label for="marriedYes">Sim</label>
+                        </div>
+                        <div class="radio-item">
+                            <input type="radio" id="marriedNo" name="isMarried" value="no">
+                            <label for="marriedNo">Não</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="personalNotes">Existe alguma informação adicional que você gostaria de compartilhar?</label>
+                    <textarea id="personalNotes" rows="4" placeholder="Qualquer informação que você considere relevante para seu acompanhamento..."></textarea>
+                </div>
+
+                <div class="btn-group">
+                    <button class="btn btn-secondary" onclick="previousPage(8)">Anterior</button>
+                    <button class="btn btn-secondary" onclick="saveToDashboard()">Salvar e ir para Dashboard</button>
+                    <button class="btn btn-primary" onclick="finishQuestionnaire()">Finalizar Questionário</button>
+                </div>
+            </div>
+        </div>
+
         <div id="completionMessage" class="card hidden">
             <h2>Questionário Completo!</h2>
             <p>Obrigado por completar o questionário inicial. Suas informações foram salvas com sucesso.</p>
+            <p>Seus landmarks foram criados e você pode acessá-los no menu.</p>
             <a href="dashboard.html" class="btn btn-primary">Ir para o Dashboard</a>
         </div>
     </div>
