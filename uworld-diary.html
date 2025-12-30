@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ward Academy - Diário UWorld</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <main class="container">
+        <div class="page-header">
+            <h2>Diário UWorld</h2>
+            <button class="btn btn-primary" id="newEntryBtn">➕ Nova Entrada</button>
+        </div>
+
+        <!-- Statistics Summary -->
+        <div class="uworld-stats">
+            <div class="stat-card">
+                <h3>Total de Questões</h3>
+                <div class="stat-number" id="totalQuestions">0</div>
+            </div>
+            <div class="stat-card">
+                <h3>Taxa de Acerto</h3>
+                <div class="stat-number" id="avgCorrect">0%</div>
+            </div>
+            <div class="stat-card">
+                <h3>Tempo Médio</h3>
+                <div class="stat-number" id="avgTime">0min</div>
+            </div>
+        </div>
+
+        <!-- New Entry Form -->
+        <div id="newEntryForm" class="entry-form hidden">
+            <h3>Nova Entrada UWorld</h3>
+            <form id="entryForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="entryDate">Data *</label>
+                        <input type="date" id="entryDate" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="questionsDone">Questões Feitas *</label>
+                        <input type="number" id="questionsDone" min="0" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="questionsCorrect">Questões Corretas *</label>
+                        <input type="number" id="questionsCorrect" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="timeSpent">Tempo (minutos) *</label>
+                        <input type="number" id="timeSpent" min="0" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="systemName">System</label>
+                        <input type="text" id="systemName" placeholder="Ex: Cardiovascular System">
+                    </div>
+                    <div class="form-group">
+                        <label for="categoryName">Category</label>
+                        <input type="text" id="categoryName" placeholder="Ex: Coronary heart disease">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="difficulties">Dificuldades Encontradas</label>
+                    <textarea id="difficulties" rows="3" maxlength="250"
+                              placeholder="Descreva as dificuldades (máximo 250 caracteres)"></textarea>
+                    <div class="char-counter">
+                        <span id="charCount">0</span> / 250 caracteres
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Diary Entries -->
+        <div class="diary-entries" id="diaryEntries">
+            <!-- Entries will be loaded here -->
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/header.js"></script>
+    <script>
+        let currentUser = getCurrentUser();
+        let currentEntryId = null;
+        let allEntries = [];
+
+        if (!currentUser) {
+            window.location.href = 'index.html';
+        }
+
+        // Initialize header
+        initHeader('uworld-diary');
+
+        // New entry button
+        const newEntryBtn = document.getElementById('newEntryBtn');
+        const newEntryForm = document.getElementById('newEntryForm');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const entryForm = document.getElementById('entryForm');
+        const difficulties = document.getElementById('difficulties');
+        const charCount = document.getElementById('charCount');
+
+        newEntryBtn.addEventListener('click', () => {
+            currentEntryId = null;
+            entryForm.reset();
+            document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
+            charCount.textContent = '0';
+            newEntryForm.classList.remove('hidden');
+            newEntryBtn.style.display = 'none';
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            newEntryForm.classList.add('hidden');
+            newEntryBtn.style.display = 'block';
+        });
+
+        // Character counter
+        difficulties.addEventListener('input', () => {
+            const length = difficulties.value.length;
+            charCount.textContent = length;
+
+            if (length > 250) {
+                difficulties.value = difficulties.value.substring(0, 250);
+                charCount.textContent = '250';
+            }
+        });
+
+        // Auto-calculate percentage
+        document.getElementById('questionsCorrect').addEventListener('input', updatePercentage);
+        document.getElementById('questionsDone').addEventListener('input', updatePercentage);
+
+        function updatePercentage() {
+            const done = parseInt(document.getElementById('questionsDone').value) || 0;
+            const correct = parseInt(document.getElementById('questionsCorrect').value) || 0;
+
+            if (correct > done) {
+                document.getElementById('questionsCorrect').value = done;
+            }
+        }
+
+        // Form submission
+        entryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const questionsDone = parseInt(document.getElementById('questionsDone').value);
+            const questionsCorrect = parseInt(document.getElementById('questionsCorrect').value);
+
+            if (questionsCorrect > questionsDone) {
+                alert('O número de questões corretas não pode ser maior que o total de questões!');
+                return;
+            }
+
+            const entryData = {
+                user_id: currentUser.id,
+                entry_date: document.getElementById('entryDate').value,
+                questions_done: questionsDone,
+                questions_correct: questionsCorrect,
+                time_spent_minutes: parseInt(document.getElementById('timeSpent').value),
+                system_name: document.getElementById('systemName').value,
+                category_name: document.getElementById('categoryName').value,
+                difficulties: difficulties.value
+            };
+
+            try {
+                const sb = initSupabase();
+
+                if (currentEntryId) {
+                    // Update existing entry
+                    const { error } = await sb
+                        .from('uworld_diary')
+                        .update({
+                            ...entryData,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', currentEntryId);
+
+                    if (error) throw error;
+                } else {
+                    // Create new entry
+                    const { error } = await sb
+                        .from('uworld_diary')
+                        .insert(entryData);
+
+                    if (error) throw error;
+                }
+
+                newEntryForm.classList.add('hidden');
+                newEntryBtn.style.display = 'block';
+                loadEntries();
+            } catch (error) {
+                console.error('Error saving entry:', error);
+                alert('Erro ao salvar entrada. Tente novamente.');
+            }
+        });
+
+        // Load entries
+        async function loadEntries() {
+            try {
+                const sb = initSupabase();
+                const { data: entries, error } = await sb
+                    .from('uworld_diary')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('entry_date', { ascending: false });
+
+                if (error) throw error;
+
+                allEntries = entries || [];
+                displayEntries(allEntries);
+                updateStats(allEntries);
+            } catch (error) {
+                console.error('Error loading entries:', error);
+                document.getElementById('diaryEntries').innerHTML = '<p class="error-message">Erro ao carregar diário.</p>';
+            }
+        }
+
+        function updateStats(entries) {
+            const totalQuestions = entries.reduce((sum, e) => sum + (e.questions_done || 0), 0);
+            const totalCorrect = entries.reduce((sum, e) => sum + (e.questions_correct || 0), 0);
+            const totalTime = entries.reduce((sum, e) => sum + (e.time_spent_minutes || 0), 0);
+
+            document.getElementById('totalQuestions').textContent = totalQuestions;
+
+            const avgCorrect = totalQuestions > 0 ? Math.round((totalCorrect / totalQuestions) * 100) : 0;
+            document.getElementById('avgCorrect').textContent = `${avgCorrect}%`;
+
+            const avgTime = entries.length > 0 ? Math.round(totalTime / entries.length) : 0;
+            document.getElementById('avgTime').textContent = `${avgTime}min`;
+        }
+
+        function displayEntries(entries) {
+            const container = document.getElementById('diaryEntries');
+
+            if (entries.length === 0) {
+                container.innerHTML = `
+                    <div class="no-data-card">
+                        <p>Nenhuma entrada no diário UWorld ainda.</p>
+                        <p>Clique em "Nova Entrada" para começar a registrar suas sessões!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Group entries by month
+            const entriesByMonth = {};
+            entries.forEach(entry => {
+                const date = new Date(entry.entry_date);
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                const monthName = date.toLocaleDateString('pt-BR', { year: 'numeric', month: 'long' });
+
+                if (!entriesByMonth[monthKey]) {
+                    entriesByMonth[monthKey] = {
+                        name: monthName,
+                        entries: []
+                    };
+                }
+
+                entriesByMonth[monthKey].entries.push(entry);
+            });
+
+            let html = '';
+
+            Object.keys(entriesByMonth).sort().reverse().forEach(monthKey => {
+                const month = entriesByMonth[monthKey];
+
+                html += `
+                    <div class="month-section">
+                        <h3 class="month-header">${month.name}</h3>
+                        <div class="month-entries">
+                            ${month.entries.map(entry => {
+                                const percentage = entry.questions_done > 0
+                                    ? Math.round((entry.questions_correct / entry.questions_done) * 100)
+                                    : 0;
+
+                                return `
+                                    <div class="diary-entry-card">
+                                        <div class="entry-header">
+                                            <div class="entry-date">
+                                                ${new Date(entry.entry_date).toLocaleDateString('pt-BR', {
+                                                    weekday: 'long',
+                                                    day: 'numeric',
+                                                    month: 'long'
+                                                })}
+                                            </div>
+                                            <div class="entry-actions">
+                                                <button class="btn-icon edit-entry" data-id="${entry.id}" title="Editar">✏️</button>
+                                                <button class="btn-icon delete-entry" data-id="${entry.id}" title="Excluir">🗑️</button>
+                                            </div>
+                                        </div>
+
+                                        <div class="entry-stats">
+                                            <div class="stat-item">
+                                                <span class="stat-label">Questões:</span>
+                                                <span class="stat-value">${entry.questions_done}</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-label">Acertos:</span>
+                                                <span class="stat-value">${entry.questions_correct} (${percentage}%)</span>
+                                            </div>
+                                            <div class="stat-item">
+                                                <span class="stat-label">Tempo:</span>
+                                                <span class="stat-value">${entry.time_spent_minutes} min</span>
+                                            </div>
+                                        </div>
+
+                                        ${entry.system_name || entry.category_name ? `
+                                            <div class="entry-topic">
+                                                ${entry.system_name ? `<strong>System:</strong> ${entry.system_name}` : ''}
+                                                ${entry.category_name ? `<br><strong>Category:</strong> ${entry.category_name}` : ''}
+                                            </div>
+                                        ` : ''}
+
+                                        ${entry.difficulties ? `
+                                            <div class="entry-difficulties">
+                                                <strong>Dificuldades:</strong>
+                                                <p>${entry.difficulties}</p>
+                                            </div>
+                                        ` : ''}
+                                    </div>
+                                `;
+                            }).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            // Attach event listeners
+            document.querySelectorAll('.edit-entry').forEach(btn => {
+                btn.addEventListener('click', () => editEntry(btn.dataset.id));
+            });
+
+            document.querySelectorAll('.delete-entry').forEach(btn => {
+                btn.addEventListener('click', () => deleteEntry(btn.dataset.id));
+            });
+        }
+
+        async function editEntry(entryId) {
+            try {
+                const sb = initSupabase();
+                const { data, error } = await sb
+                    .from('uworld_diary')
+                    .select('*')
+                    .eq('id', entryId)
+                    .single();
+
+                if (error) throw error;
+
+                currentEntryId = entryId;
+                document.getElementById('entryDate').value = data.entry_date;
+                document.getElementById('questionsDone').value = data.questions_done;
+                document.getElementById('questionsCorrect').value = data.questions_correct;
+                document.getElementById('timeSpent').value = data.time_spent_minutes;
+                document.getElementById('systemName').value = data.system_name || '';
+                document.getElementById('categoryName').value = data.category_name || '';
+                document.getElementById('difficulties').value = data.difficulties || '';
+                charCount.textContent = (data.difficulties || '').length;
+
+                newEntryForm.classList.remove('hidden');
+                newEntryBtn.style.display = 'none';
+            } catch (error) {
+                console.error('Error loading entry:', error);
+                alert('Erro ao carregar entrada.');
+            }
+        }
+
+        async function deleteEntry(entryId) {
+            if (!confirm('Tem certeza que deseja excluir esta entrada?')) return;
+
+            try {
+                const sb = initSupabase();
+                const { error } = await sb
+                    .from('uworld_diary')
+                    .delete()
+                    .eq('id', entryId);
+
+                if (error) throw error;
+                loadEntries();
+            } catch (error) {
+                console.error('Error deleting entry:', error);
+                alert('Erro ao excluir entrada.');
+            }
+        }
+
+        // Initial load
+        loadEntries();
+    </script>
+
+    <style>
+        .uworld-stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            margin: 0 0 15px 0;
+            font-size: 14px;
+            color: #666;
+            text-transform: uppercase;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: bold;
+            color: var(--color-primary);
+        }
+
+        .entry-form {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .entry-form h3 {
+            margin: 0 0 20px 0;
+            color: var(--color-primary);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .diary-entries {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .month-section {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .month-header {
+            background: var(--color-primary);
+            color: white;
+            padding: 15px 20px;
+            margin: 0;
+            font-size: 18px;
+            text-transform: capitalize;
+        }
+
+        .month-entries {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .diary-entry-card {
+            background: var(--color-light-gray);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 15px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .diary-entry-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .entry-date {
+            font-weight: 600;
+            color: var(--color-primary);
+            text-transform: capitalize;
+        }
+
+        .entry-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-icon:hover {
+            transform: scale(1.2);
+        }
+
+        .entry-stats {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .stat-item {
+            display: flex;
+            gap: 8px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+        }
+
+        .stat-value {
+            font-weight: 600;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .entry-topic {
+            background: white;
+            padding: 10px;
+            border-radius: 4px;
+            margin-bottom: 10px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .entry-difficulties {
+            background: #fff3e0;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #ff9800;
+        }
+
+        .entry-difficulties strong {
+            display: block;
+            margin-bottom: 5px;
+            color: #f57c00;
+        }
+
+        .entry-difficulties p {
+            margin: 0;
+            color: #333;
+            white-space: pre-wrap;
+        }
+
+        .no-data-card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .no-data-card p {
+            color: #666;
+            margin: 10px 0;
+        }
+    </style>
+</body>
+</html>

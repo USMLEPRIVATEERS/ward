@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ward Academy - Diário de Estudos</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div id="header-placeholder"></div>
+
+    <main class="container">
+        <div class="page-header">
+            <h2>Diário de Estudos</h2>
+            <button class="btn btn-primary" id="newEntryBtn">➕ Nova Entrada</button>
+        </div>
+
+        <!-- New Entry Form -->
+        <div id="newEntryForm" class="entry-form hidden">
+            <h3>Nova Entrada</h3>
+            <form id="entryForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="entryDate">Data *</label>
+                        <input type="date" id="entryDate" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="entryText">O que você estudou hoje? *</label>
+                    <textarea id="entryText" rows="4" maxlength="250" required
+                              placeholder="Descreva o que estudou hoje (máximo 250 caracteres)"></textarea>
+                    <div class="char-counter">
+                        <span id="charCount">0</span> / 250 caracteres
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
+                    <button type="submit" class="btn btn-primary">Salvar</button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Diary Entries -->
+        <div class="diary-entries" id="diaryEntries">
+            <!-- Entries will be loaded here -->
+        </div>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
+    <script src="js/header.js"></script>
+    <script>
+        let currentUser = getCurrentUser();
+        let currentEntryId = null;
+
+        if (!currentUser) {
+            window.location.href = 'index.html';
+        }
+
+        // Initialize header
+        initHeader('study-diary');
+
+        // New entry button
+        const newEntryBtn = document.getElementById('newEntryBtn');
+        const newEntryForm = document.getElementById('newEntryForm');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const entryForm = document.getElementById('entryForm');
+        const entryText = document.getElementById('entryText');
+        const charCount = document.getElementById('charCount');
+
+        newEntryBtn.addEventListener('click', () => {
+            currentEntryId = null;
+            entryForm.reset();
+            document.getElementById('entryDate').value = new Date().toISOString().split('T')[0];
+            charCount.textContent = '0';
+            newEntryForm.classList.remove('hidden');
+            newEntryBtn.style.display = 'none';
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            newEntryForm.classList.add('hidden');
+            newEntryBtn.style.display = 'block';
+        });
+
+        // Character counter
+        entryText.addEventListener('input', () => {
+            const length = entryText.value.length;
+            charCount.textContent = length;
+
+            if (length > 250) {
+                entryText.value = entryText.value.substring(0, 250);
+                charCount.textContent = '250';
+            }
+        });
+
+        // Form submission
+        entryForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const entryData = {
+                user_id: currentUser.id,
+                entry_date: document.getElementById('entryDate').value,
+                entry_text: entryText.value
+            };
+
+            try {
+                const sb = initSupabase();
+
+                if (currentEntryId) {
+                    // Update existing entry
+                    const { error } = await sb
+                        .from('study_diary')
+                        .update({
+                            entry_text: entryData.entry_text,
+                            updated_at: new Date().toISOString()
+                        })
+                        .eq('id', currentEntryId);
+
+                    if (error) throw error;
+                } else {
+                    // Create new entry
+                    const { error } = await sb
+                        .from('study_diary')
+                        .insert(entryData);
+
+                    if (error) throw error;
+                }
+
+                newEntryForm.classList.add('hidden');
+                newEntryBtn.style.display = 'block';
+                loadEntries();
+            } catch (error) {
+                console.error('Error saving entry:', error);
+                alert('Erro ao salvar entrada. Tente novamente.');
+            }
+        });
+
+        // Load entries
+        async function loadEntries() {
+            try {
+                const sb = initSupabase();
+                const { data: entries, error } = await sb
+                    .from('study_diary')
+                    .select('*')
+                    .eq('user_id', currentUser.id)
+                    .order('entry_date', { ascending: false });
+
+                if (error) throw error;
+
+                displayEntries(entries || []);
+            } catch (error) {
+                console.error('Error loading entries:', error);
+                document.getElementById('diaryEntries').innerHTML = '<p class="error-message">Erro ao carregar diário.</p>';
+            }
+        }
+
+        function displayEntries(entries) {
+            const container = document.getElementById('diaryEntries');
+
+            if (entries.length === 0) {
+                container.innerHTML = `
+                    <div class="no-data-card">
+                        <p>Nenhuma entrada no diário ainda.</p>
+                        <p>Clique em "Nova Entrada" para começar a registrar seus estudos!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            // Group entries by month
+            const entriesByMonth = {};
+            entries.forEach(entry => {
+                const date = new Date(entry.entry_date);
+                const monthKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+                const monthName = date.toLocaleDateString('pt-BR', { year: 'numeric', month: 'long' });
+
+                if (!entriesByMonth[monthKey]) {
+                    entriesByMonth[monthKey] = {
+                        name: monthName,
+                        entries: []
+                    };
+                }
+
+                entriesByMonth[monthKey].entries.push(entry);
+            });
+
+            let html = '';
+
+            Object.keys(entriesByMonth).sort().reverse().forEach(monthKey => {
+                const month = entriesByMonth[monthKey];
+
+                html += `
+                    <div class="month-section">
+                        <h3 class="month-header">${month.name}</h3>
+                        <div class="month-entries">
+                            ${month.entries.map(entry => `
+                                <div class="diary-entry-card">
+                                    <div class="entry-header">
+                                        <div class="entry-date">
+                                            ${new Date(entry.entry_date).toLocaleDateString('pt-BR', {
+                                                weekday: 'long',
+                                                day: 'numeric',
+                                                month: 'long'
+                                            })}
+                                        </div>
+                                        <div class="entry-actions">
+                                            <button class="btn-icon edit-entry" data-id="${entry.id}" title="Editar">✏️</button>
+                                            <button class="btn-icon delete-entry" data-id="${entry.id}" title="Excluir">🗑️</button>
+                                        </div>
+                                    </div>
+                                    <div class="entry-text">${entry.entry_text}</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            });
+
+            container.innerHTML = html;
+
+            // Attach event listeners
+            document.querySelectorAll('.edit-entry').forEach(btn => {
+                btn.addEventListener('click', () => editEntry(btn.dataset.id));
+            });
+
+            document.querySelectorAll('.delete-entry').forEach(btn => {
+                btn.addEventListener('click', () => deleteEntry(btn.dataset.id));
+            });
+        }
+
+        async function editEntry(entryId) {
+            try {
+                const sb = initSupabase();
+                const { data, error } = await sb
+                    .from('study_diary')
+                    .select('*')
+                    .eq('id', entryId)
+                    .single();
+
+                if (error) throw error;
+
+                currentEntryId = entryId;
+                document.getElementById('entryDate').value = data.entry_date;
+                document.getElementById('entryText').value = data.entry_text;
+                charCount.textContent = data.entry_text.length;
+
+                newEntryForm.classList.remove('hidden');
+                newEntryBtn.style.display = 'none';
+            } catch (error) {
+                console.error('Error loading entry:', error);
+                alert('Erro ao carregar entrada.');
+            }
+        }
+
+        async function deleteEntry(entryId) {
+            if (!confirm('Tem certeza que deseja excluir esta entrada?')) return;
+
+            try {
+                const sb = initSupabase();
+                const { error } = await sb
+                    .from('study_diary')
+                    .delete()
+                    .eq('id', entryId);
+
+                if (error) throw error;
+                loadEntries();
+            } catch (error) {
+                console.error('Error deleting entry:', error);
+                alert('Erro ao excluir entrada.');
+            }
+        }
+
+        // Initial load
+        loadEntries();
+    </script>
+
+    <style>
+        .entry-form {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 25px;
+            margin-bottom: 30px;
+        }
+
+        .entry-form h3 {
+            margin: 0 0 20px 0;
+            color: var(--color-primary);
+        }
+
+        .char-counter {
+            text-align: right;
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .diary-entries {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .month-section {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .month-header {
+            background: var(--color-primary);
+            color: white;
+            padding: 15px 20px;
+            margin: 0;
+            font-size: 18px;
+            text-transform: capitalize;
+        }
+
+        .month-entries {
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .diary-entry-card {
+            background: var(--color-light-gray);
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 15px;
+            transition: box-shadow 0.3s ease;
+        }
+
+        .diary-entry-card:hover {
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .entry-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .entry-date {
+            font-weight: 600;
+            color: var(--color-primary);
+            text-transform: capitalize;
+        }
+
+        .entry-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-icon {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 18px;
+            padding: 5px;
+            transition: transform 0.2s ease;
+        }
+
+        .btn-icon:hover {
+            transform: scale(1.2);
+        }
+
+        .entry-text {
+            color: #333;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        .no-data-card {
+            background: white;
+            border: 1px solid var(--color-border);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+        }
+
+        .no-data-card p {
+            color: #666;
+            margin: 10px 0;
+        }
+    </style>
+</body>
+</html>
