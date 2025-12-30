@@ -3,567 +3,317 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ward Academy - Landmarks</title>
-    <link rel="stylesheet" href="css/styles.css">
-    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+    <title>Landmarks - Ward Academy</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+    <link rel="stylesheet" href="css/landmarks.css">
 </head>
 <body>
-    <div id="header-placeholder"></div>
-
-    <main class="container">
-        <div class="page-header">
-            <h2>Landmarks - Chamadas com Mentores</h2>
-            <button class="btn btn-primary" id="addLandmarkBtn">➕ Adicionar Landmark Extra</button>
+    <!-- Header de Navegação -->
+    <header class="main-header">
+        <div class="header-container">
+            <div class="logo">
+                <span class="logo-icon">🎓</span>
+                <span class="logo-text">WARD ACADEMY</span>
+            </div>
+            <nav class="main-nav">
+                <a href="dashboard.html" class="nav-link">Dashboard</a>
+                <a href="landmarks.html" class="nav-link active">Landmarks</a>
+                <a href="schedule.html" class="nav-link">Cronograma</a>
+                <a href="links.html" class="nav-link">Links</a>
+                <a href="blog.html" class="nav-link">Blog</a>
+                <a href="research.html" class="nav-link">Pesquisa</a>
+                <a href="study-diary.html" class="nav-link diary-link" id="studyDiaryLink" style="display: none;">Diário Estudos</a>
+                <a href="uworld-diary.html" class="nav-link diary-link" id="uworldDiaryLink" style="display: none;">Diário UWorld</a>
+            </nav>
+            <div class="header-actions">
+                <a href="profile.html" class="btn-icon" title="Perfil">
+                    <span>👤</span>
+                    <span class="btn-text">Perfil</span>
+                </a>
+                <button onclick="logout()" class="btn-icon btn-logout" title="Sair">
+                    <span>🚪</span>
+                    <span class="btn-text">Sair</span>
+                </button>
+            </div>
         </div>
+    </header>
 
-        <div class="landmarks-container" id="landmarksContainer">
-            <!-- Landmarks will be loaded here -->
+    <!-- Main Content -->
+    <main class="dashboard-main">
+        <div class="dashboard-container">
+            <!-- Page Header -->
+            <section class="welcome-section">
+                <h1>🎯 Landmarks - Marcos e Chamadas</h1>
+            </section>
+
+            <!-- Legend -->
+            <div class="dashboard-card">
+                <div class="card-body">
+                    <div class="legend">
+                        <span class="legend-item"><span class="status-icon completed">✅</span> Concluído</span>
+                        <span class="legend-item"><span class="status-icon pending">⏳</span> Pendente</span>
+                        <span class="legend-item"><span class="status-icon urgent">⚠️</span> Urgente</span>
+                        <span class="legend-item"><span class="status-icon notes">📝</span> Com Observações</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Landmarks List -->
+            <div id="landmarksContainer">
+                <!-- Entrada e Setup Inicial -->
+                <div class="landmarks-section">
+                    <div class="section-header">
+                        <h2>ENTRADA E SETUP INICIAL</h2>
+                    </div>
+                    <div class="landmarks-list" data-section="entrada">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Primeira Rodada de Chamadas -->
+                <div class="landmarks-section">
+                    <div class="section-header">
+                        <h2>PRIMEIRA RODADA DE CHAMADAS</h2>
+                    </div>
+                    <div class="landmarks-list" data-section="primeira-rodada">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Segunda Rodada de Chamadas -->
+                <div class="landmarks-section">
+                    <div class="section-header">
+                        <h2>SEGUNDA RODADA DE CHAMADAS</h2>
+                    </div>
+                    <div class="landmarks-list" data-section="segunda-rodada">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Chamadas por System Concluído -->
+                <div class="landmarks-section">
+                    <div class="section-header">
+                        <h2>CHAMADAS POR SYSTEM CONCLUÍDO</h2>
+                        <button class="btn btn-secondary btn-sm" onclick="addSystemLandmark()">
+                            + Adicionar chamada de System concluído
+                        </button>
+                    </div>
+                    <div class="landmarks-list" data-section="systems">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Chamadas de Pesquisa (Condicional) -->
+                <div class="landmarks-section" id="researchCallsSection" style="display: none;">
+                    <div class="section-header">
+                        <h2>CHAMADAS DE PESQUISA</h2>
+                    </div>
+                    <div class="landmarks-list" data-section="pesquisa">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Fase de Second Pass e Simulados -->
+                <div class="landmarks-section">
+                    <div class="section-header">
+                        <h2>FASE DE SECOND PASS E SIMULADOS</h2>
+                    </div>
+                    <div class="landmarks-list" data-section="second-pass">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Fase Dedicated e Prova -->
+                <div class="landmarks-section">
+                    <div class="section-header">
+                        <h2>FASE DEDICATED E PROVA</h2>
+                    </div>
+                    <div class="landmarks-list" data-section="dedicated">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                </div>
+
+                <!-- Chamadas Extras -->
+                <div class="landmarks-section">
+                    <div class="section-header">
+                        <h2>CHAMADAS EXTRAS</h2>
+                    </div>
+                    <div class="landmarks-list" data-section="extras">
+                        <!-- Populated by JavaScript -->
+                    </div>
+                    <div class="card-body">
+                        <button class="btn btn-secondary" onclick="addExtraCall('iria')">
+                            + Adicionar chamada extra com Dra. Iria
+                        </button>
+                        <button class="btn btn-secondary" onclick="addExtraCall('marcos')">
+                            + Adicionar chamada extra com Marcos
+                        </button>
+                        <button class="btn btn-secondary" onclick="addExtraCall('guilherme')">
+                            + Adicionar chamada extra com Guilherme
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </main>
 
-    <!-- Edit Landmark Modal -->
-    <div id="landmarkModal" class="modal hidden">
-        <div class="modal-content">
-            <span class="close">&times;</span>
-            <h3 id="modalTitle">Editar Landmark</h3>
-            <form id="landmarkForm">
-                <div class="form-group">
-                    <label for="landmarkTitle">Título *</label>
-                    <input type="text" id="landmarkTitle" required>
-                </div>
+    <!-- Modal: Adicionar/Editar Landmark -->
+    <div id="landmarkModal" class="modal" style="display: none;">
+        <div class="modal-overlay" onclick="closeLandmarkModal()"></div>
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3 id="modalTitle">Editar Landmark</h3>
+                <button class="modal-close" onclick="closeLandmarkModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="landmarkForm">
+                    <input type="hidden" id="landmarkId">
 
-                <div class="form-group">
-                    <label for="landmarkMentor">Mentor</label>
-                    <select id="landmarkMentor">
-                        <option value="Dra Iria">Dra Iria</option>
-                        <option value="Guilherme">Guilherme</option>
-                        <option value="Marcos">Marcos</option>
-                        <option value="Rômulo">Rômulo</option>
-                    </select>
-                </div>
+                    <div class="form-group">
+                        <label for="landmarkTitle">Título da Chamada</label>
+                        <input type="text" id="landmarkTitle" required>
+                    </div>
 
-                <div class="form-group">
-                    <label for="landmarkDescription">Descrição</label>
-                    <textarea id="landmarkDescription" rows="3"></textarea>
-                </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <div class="radio-group-compact">
+                            <label class="radio-label-compact">
+                                <input type="radio" name="landmarkStatus" value="pending">
+                                <span>⏳ Pendente</span>
+                            </label>
+                            <label class="radio-label-compact">
+                                <input type="radio" name="landmarkStatus" value="completed">
+                                <span>✅ Concluído</span>
+                            </label>
+                        </div>
+                    </div>
 
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="landmarkCompleted">
-                        Marcada como concluída
-                    </label>
-                </div>
+                    <div class="form-group" id="completionDateGroup" style="display: none;">
+                        <label for="completionDate">Data de Conclusão</label>
+                        <input type="date" id="completionDate">
+                    </div>
 
-                <div class="form-group" id="completedDateGroup" style="display: none;">
-                    <label for="completedDate">Data de Conclusão</label>
-                    <input type="date" id="completedDate">
-                </div>
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="isUrgent">
+                            Marcar como urgente
+                        </label>
+                    </div>
 
-                <div class="form-group">
-                    <label>
-                        <input type="checkbox" id="landmarkUrgent">
-                        Marcar como urgente
-                    </label>
-                </div>
-
-                <div class="form-group">
-                    <label for="landmarkObservations">Observações</label>
-                    <textarea id="landmarkObservations" rows="4"></textarea>
-                </div>
-
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" id="cancelBtn">Cancelar</button>
-                    <button type="submit" class="btn btn-primary">Salvar</button>
-                </div>
-            </form>
+                    <div class="form-group">
+                        <label for="landmarkNotes">Observações</label>
+                        <textarea id="landmarkNotes" rows="4" placeholder="Adicione observações sobre esta chamada..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeLandmarkModal()">
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveLandmark()">
+                    Salvar
+                </button>
+            </div>
         </div>
     </div>
 
+    <!-- Modal: Adicionar System Landmark -->
+    <div id="systemLandmarkModal" class="modal" style="display: none;">
+        <div class="modal-overlay" onclick="closeSystemLandmarkModal()"></div>
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3>Adicionar Chamada de System Concluído</h3>
+                <button class="modal-close" onclick="closeSystemLandmarkModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="systemLandmarkForm">
+                    <div class="form-group">
+                        <label for="systemName">System Concluído</label>
+                        <select id="systemName" required>
+                            <option value="">Selecione o system...</option>
+                            <option value="Biochemistry">Biochemistry</option>
+                            <option value="Genetics">Genetics</option>
+                            <option value="Cardiovascular">Cardiovascular</option>
+                            <option value="Respiratory">Respiratory</option>
+                            <option value="Gastrointestinal">Gastrointestinal</option>
+                            <option value="Renal">Renal</option>
+                            <option value="Reproductive">Reproductive</option>
+                            <option value="Endocrine">Endocrine</option>
+                            <option value="Musculoskeletal">Musculoskeletal</option>
+                            <option value="Hematology">Hematology</option>
+                            <option value="Nervous System">Nervous System</option>
+                            <option value="Immunology">Immunology</option>
+                            <option value="Microbiology">Microbiology</option>
+                            <option value="Pharmacology">Pharmacology</option>
+                            <option value="Behavioral Science">Behavioral Science</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="systemMentor">Mentor da Chamada</label>
+                        <select id="systemMentor" required>
+                            <option value="iria">Dra. Iria</option>
+                            <option value="marcos">Marcos</option>
+                            <option value="guilherme">Guilherme</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="systemNotes">Observações (opcional)</label>
+                        <textarea id="systemNotes" rows="3"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeSystemLandmarkModal()">
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveSystemLandmark()">
+                    Adicionar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Adicionar Chamada Extra -->
+    <div id="extraCallModal" class="modal" style="display: none;">
+        <div class="modal-overlay" onclick="closeExtraCallModal()"></div>
+        <div class="modal-content modal-sm">
+            <div class="modal-header">
+                <h3 id="extraCallModalTitle">Adicionar Chamada Extra</h3>
+                <button class="modal-close" onclick="closeExtraCallModal()">×</button>
+            </div>
+            <div class="modal-body">
+                <form id="extraCallForm">
+                    <input type="hidden" id="extraCallMentor">
+
+                    <div class="form-group">
+                        <label for="extraCallTitle">Título da Chamada</label>
+                        <input type="text" id="extraCallTitle" required placeholder="Ex: Dúvidas sobre Cardio">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="extraCallNotes">Observações (opcional)</label>
+                        <textarea id="extraCallNotes" rows="3" placeholder="Detalhes sobre o que deseja discutir..."></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" onclick="closeExtraCallModal()">
+                    Cancelar
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveExtraCall()">
+                    Adicionar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase-config.js"></script>
-    <script src="js/header.js"></script>
-    <script>
-        let currentUser = getCurrentUser();
-        let currentLandmarkId = null;
-        let sortable = null;
-
-        if (!currentUser) {
-            window.location.href = 'index.html';
-        }
-
-        // Initialize header
-        initHeader('landmarks');
-
-        // Modal controls
-        const modal = document.getElementById('landmarkModal');
-        const addLandmarkBtn = document.getElementById('addLandmarkBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
-        const closeBtn = document.querySelector('.close');
-
-        addLandmarkBtn.addEventListener('click', () => {
-            currentLandmarkId = null;
-            document.getElementById('modalTitle').textContent = 'Adicionar Landmark Extra';
-            document.getElementById('landmarkForm').reset();
-            modal.classList.remove('hidden');
-        });
-
-        cancelBtn.addEventListener('click', () => {
-            modal.classList.add('hidden');
-        });
-
-        closeBtn.addEventListener('click', () => {
-            modal.classList.add('hidden');
-        });
-
-        // Completed checkbox handler
-        document.getElementById('landmarkCompleted').addEventListener('change', (e) => {
-            const dateGroup = document.getElementById('completedDateGroup');
-            if (e.target.checked) {
-                dateGroup.style.display = 'block';
-                if (!document.getElementById('completedDate').value) {
-                    document.getElementById('completedDate').value = new Date().toISOString().split('T')[0];
-                }
-            } else {
-                dateGroup.style.display = 'none';
-            }
-        });
-
-        // Form submission
-        document.getElementById('landmarkForm').addEventListener('submit', async (e) => {
-            e.preventDefault();
-
-            const landmarkData = {
-                title: document.getElementById('landmarkTitle').value,
-                mentor_name: document.getElementById('landmarkMentor').value,
-                description: document.getElementById('landmarkDescription').value,
-                is_completed: document.getElementById('landmarkCompleted').checked,
-                completed_date: document.getElementById('landmarkCompleted').checked
-                    ? document.getElementById('completedDate').value
-                    : null,
-                is_urgent: document.getElementById('landmarkUrgent').checked,
-                observations: document.getElementById('landmarkObservations').value,
-                user_id: currentUser.id
-            };
-
-            try {
-                const sb = initSupabase();
-
-                if (currentLandmarkId) {
-                    // Update existing
-                    const { error } = await sb
-                        .from('landmarks')
-                        .update(landmarkData)
-                        .eq('id', currentLandmarkId);
-
-                    if (error) throw error;
-                } else {
-                    // Create new
-                    const { error } = await sb
-                        .from('landmarks')
-                        .insert({
-                            ...landmarkData,
-                            landmark_type: 'custom',
-                            display_order: 9999
-                        });
-
-                    if (error) throw error;
-                }
-
-                modal.classList.add('hidden');
-                loadLandmarks();
-            } catch (error) {
-                console.error('Error saving landmark:', error);
-                alert('Erro ao salvar landmark.');
-            }
-        });
-
-        // Load landmarks
-        async function loadLandmarks() {
-            try {
-                const sb = initSupabase();
-                const { data: landmarks, error } = await sb
-                    .from('landmarks')
-                    .select('*')
-                    .eq('user_id', currentUser.id)
-                    .order('display_order');
-
-                if (error) throw error;
-
-                displayLandmarks(landmarks || []);
-                initSortable();
-            } catch (error) {
-                console.error('Error loading landmarks:', error);
-                document.getElementById('landmarksContainer').innerHTML = '<p class="error-message">Erro ao carregar landmarks.</p>';
-            }
-        }
-
-        function displayLandmarks(landmarks) {
-            const container = document.getElementById('landmarksContainer');
-
-            if (landmarks.length === 0) {
-                container.innerHTML = `
-                    <div class="no-data-card">
-                        <p>Nenhum landmark ainda.</p>
-                        <p>Os landmarks padrão serão criados automaticamente ao completar o questionário inicial.</p>
-                    </div>
-                `;
-                return;
-            }
-
-            const completedCount = landmarks.filter(l => l.is_completed).length;
-            const totalCount = landmarks.length;
-
-            const progressHTML = `
-                <div class="progress-card">
-                    <h3>Progresso Geral</h3>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${(completedCount/totalCount)*100}%"></div>
-                    </div>
-                    <p>${completedCount} de ${totalCount} landmarks concluídos</p>
-                </div>
-            `;
-
-            const landmarksHTML = landmarks.map(landmark => `
-                <div class="landmark-card ${landmark.is_completed ? 'completed' : ''} ${landmark.is_urgent ? 'urgent' : ''}"
-                     data-id="${landmark.id}">
-                    <div class="landmark-drag-handle">⋮⋮</div>
-                    <div class="landmark-content">
-                        <div class="landmark-header">
-                            <h4>${landmark.title}</h4>
-                            <div class="landmark-badges">
-                                ${landmark.mentor_name ? `<span class="mentor-badge">${landmark.mentor_name}</span>` : ''}
-                                ${landmark.is_urgent ? '<span class="urgent-badge">🚨 URGENTE</span>' : ''}
-                                ${landmark.is_completed ? '<span class="completed-badge">✅ Concluído</span>' : '<span class="pending-badge">⏳ Pendente</span>'}
-                            </div>
-                        </div>
-
-                        ${landmark.description ? `<p class="landmark-description">${landmark.description}</p>` : ''}
-
-                        ${landmark.is_completed && landmark.completed_date ?
-                            `<p class="completed-date">Concluído em: ${new Date(landmark.completed_date).toLocaleDateString('pt-BR')}</p>`
-                            : ''}
-
-                        ${landmark.observations ? `
-                            <div class="landmark-observations">
-                                <strong>Observações:</strong>
-                                <p>${landmark.observations}</p>
-                            </div>
-                        ` : ''}
-
-                        <div class="landmark-actions">
-                            <button class="btn btn-sm btn-secondary edit-landmark" data-id="${landmark.id}">✏️ Editar</button>
-                            ${!landmark.is_completed ?
-                                `<button class="btn btn-sm btn-primary mark-complete" data-id="${landmark.id}">✓ Marcar como Concluído</button>`
-                                : ''}
-                            ${landmark.landmark_type === 'custom' ?
-                                `<button class="btn btn-sm btn-danger delete-landmark" data-id="${landmark.id}">🗑️ Excluir</button>`
-                                : ''}
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-
-            container.innerHTML = progressHTML + '<div id="sortableLandmarks" class="sortable-landmarks">' + landmarksHTML + '</div>';
-
-            // Attach event listeners
-            document.querySelectorAll('.edit-landmark').forEach(btn => {
-                btn.addEventListener('click', () => editLandmark(btn.dataset.id));
-            });
-
-            document.querySelectorAll('.mark-complete').forEach(btn => {
-                btn.addEventListener('click', () => markComplete(btn.dataset.id));
-            });
-
-            document.querySelectorAll('.delete-landmark').forEach(btn => {
-                btn.addEventListener('click', () => deleteLandmark(btn.dataset.id));
-            });
-        }
-
-        function initSortable() {
-            const el = document.getElementById('sortableLandmarks');
-            if (!el) return;
-
-            if (sortable) sortable.destroy();
-
-            sortable = Sortable.create(el, {
-                animation: 150,
-                handle: '.landmark-drag-handle',
-                onEnd: async function (evt) {
-                    await updateLandmarkOrder();
-                }
-            });
-        }
-
-        async function updateLandmarkOrder() {
-            const landmarkElements = document.querySelectorAll('.landmark-card');
-            const updates = [];
-
-            landmarkElements.forEach((el, index) => {
-                updates.push({
-                    id: el.dataset.id,
-                    display_order: index
-                });
-            });
-
-            try {
-                const sb = initSupabase();
-                for (const update of updates) {
-                    await sb
-                        .from('landmarks')
-                        .update({ display_order: update.display_order })
-                        .eq('id', update.id);
-                }
-            } catch (error) {
-                console.error('Error updating order:', error);
-            }
-        }
-
-        async function editLandmark(landmarkId) {
-            try {
-                const sb = initSupabase();
-                const { data, error } = await sb
-                    .from('landmarks')
-                    .select('*')
-                    .eq('id', landmarkId)
-                    .single();
-
-                if (error) throw error;
-
-                currentLandmarkId = landmarkId;
-                document.getElementById('modalTitle').textContent = 'Editar Landmark';
-                document.getElementById('landmarkTitle').value = data.title;
-                document.getElementById('landmarkMentor').value = data.mentor_name || 'Dra Iria';
-                document.getElementById('landmarkDescription').value = data.description || '';
-                document.getElementById('landmarkCompleted').checked = data.is_completed;
-                document.getElementById('completedDate').value = data.completed_date || '';
-                document.getElementById('landmarkUrgent').checked = data.is_urgent;
-                document.getElementById('landmarkObservations').value = data.observations || '';
-
-                if (data.is_completed) {
-                    document.getElementById('completedDateGroup').style.display = 'block';
-                }
-
-                modal.classList.remove('hidden');
-            } catch (error) {
-                console.error('Error loading landmark:', error);
-                alert('Erro ao carregar landmark.');
-            }
-        }
-
-        async function markComplete(landmarkId) {
-            try {
-                const sb = initSupabase();
-                const { error } = await sb
-                    .from('landmarks')
-                    .update({
-                        is_completed: true,
-                        completed_date: new Date().toISOString().split('T')[0]
-                    })
-                    .eq('id', landmarkId);
-
-                if (error) throw error;
-                loadLandmarks();
-            } catch (error) {
-                console.error('Error marking complete:', error);
-                alert('Erro ao marcar como concluído.');
-            }
-        }
-
-        async function deleteLandmark(landmarkId) {
-            if (!confirm('Tem certeza que deseja excluir este landmark?')) return;
-
-            try {
-                const sb = initSupabase();
-                const { error } = await sb
-                    .from('landmarks')
-                    .delete()
-                    .eq('id', landmarkId);
-
-                if (error) throw error;
-                loadLandmarks();
-            } catch (error) {
-                console.error('Error deleting landmark:', error);
-                alert('Erro ao excluir landmark.');
-            }
-        }
-
-        // Initial load
-        loadLandmarks();
-    </script>
-
-    <style>
-        .progress-card {
-            background: white;
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
-            padding: 20px;
-            margin-bottom: 30px;
-        }
-
-        .progress-card h3 {
-            margin: 0 0 15px 0;
-            color: var(--color-primary);
-        }
-
-        .progress-bar {
-            width: 100%;
-            height: 30px;
-            background: #e0e0e0;
-            border-radius: 15px;
-            overflow: hidden;
-            margin-bottom: 10px;
-        }
-
-        .progress-fill {
-            height: 100%;
-            background: var(--color-primary);
-            transition: width 0.5s ease;
-        }
-
-        .sortable-landmarks {
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
-
-        .landmark-card {
-            background: white;
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
-            padding: 20px;
-            display: flex;
-            gap: 15px;
-            transition: all 0.3s ease;
-        }
-
-        .landmark-card.completed {
-            background: #f1f8f4;
-            border-left: 4px solid #4caf50;
-        }
-
-        .landmark-card.urgent {
-            background: #fff3e0;
-            border-left: 4px solid #f44336;
-        }
-
-        .landmark-drag-handle {
-            cursor: grab;
-            color: #999;
-            font-size: 20px;
-            padding: 5px;
-        }
-
-        .landmark-drag-handle:active {
-            cursor: grabbing;
-        }
-
-        .landmark-content {
-            flex: 1;
-        }
-
-        .landmark-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 10px;
-        }
-
-        .landmark-header h4 {
-            margin: 0;
-            font-size: 18px;
-        }
-
-        .landmark-badges {
-            display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-
-        .mentor-badge {
-            background: #e3f2fd;
-            color: #1976d2;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .urgent-badge {
-            background: #f44336;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-            animation: pulse 1.5s infinite;
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.7; }
-        }
-
-        .completed-badge {
-            background: #4caf50;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .pending-badge {
-            background: #ff9800;
-            color: white;
-            padding: 4px 10px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: bold;
-        }
-
-        .landmark-description {
-            color: #666;
-            margin: 10px 0;
-        }
-
-        .completed-date {
-            color: #4caf50;
-            font-size: 14px;
-            font-style: italic;
-            margin: 5px 0;
-        }
-
-        .landmark-observations {
-            background: var(--color-light-gray);
-            padding: 10px;
-            border-radius: 4px;
-            margin: 10px 0;
-        }
-
-        .landmark-observations p {
-            margin: 5px 0 0 0;
-            white-space: pre-wrap;
-        }
-
-        .landmark-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 15px;
-            flex-wrap: wrap;
-        }
-
-        .no-data-card {
-            background: white;
-            border: 1px solid var(--color-border);
-            border-radius: 8px;
-            padding: 40px;
-            text-align: center;
-        }
-
-        .no-data-card p {
-            color: #666;
-            margin: 10px 0;
-        }
-    </style>
+    <script src="js/config.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/landmarks.js"></script>
 </body>
 </html>
